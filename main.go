@@ -1,19 +1,15 @@
 package main
 
 import (
-	"net/http"
+	"cozy-inn/route"
 
 	"github.com/labstack/echo/v4"
 )
 
 func main() {
 	e := echo.New()
-	// routing with query parameter
-	e.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"messages": "Hello World!",
-		})
-	})
-	// start the server, and log if it fails
+
+	route.InitRoute(e)
+
 	e.Logger.Fatal(e.Start(":3000"))
 }
