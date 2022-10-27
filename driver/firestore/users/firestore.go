@@ -4,6 +4,7 @@ import (
 	"context"
 	"cozy-inn/businesses/users"
 	"errors"
+	"time"
 
 	"log"
 
@@ -49,12 +50,13 @@ func (ur *UserRepository) Register(userDomain *users.Domain) error {
 	}
 
 	_, err := ur.usersCollection().Doc(rec.Email).Set(ur.ctx, Model{
-		UserID:      rec.UserID,
 		Role:        rec.Role,
 		Name:        rec.Name,
 		Email:       rec.Email,
 		Password:    rec.Password,
 		ImageID_URL: rec.ImageID_URL,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
 	})
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)

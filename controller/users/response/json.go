@@ -6,7 +6,6 @@ import (
 )
 
 type User struct {
-	UserID      string    `json:"userID" firestore:"userID"`
 	Role        string    `json:"role" firestore:"role"`
 	Name        string    `json:"name" firestore:"name"`
 	Email       string    `json:"email" firestore:"email"`
@@ -18,7 +17,6 @@ type User struct {
 
 func FromDomain(domain users.Domain) User {
 	return User{
-		UserID:      domain.UserID,
 		Role:        domain.Role,
 		Email:       domain.Email,
 		Password:    domain.Password,

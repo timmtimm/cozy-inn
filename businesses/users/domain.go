@@ -5,7 +5,6 @@ import (
 )
 
 type Domain struct {
-	UserID      string
 	Role        string
 	Name        string
 	Email       string
