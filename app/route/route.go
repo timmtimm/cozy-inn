@@ -15,13 +15,13 @@ type ControllerList struct {
 func (cl *ControllerList) InitRoute(e *echo.Echo) {
 	e.Use(cl.LoggerMiddleware)
 
-	// v1 := e.Group("/api/v1/users")
+	v1 := e.Group("/api/v1")
 
-	e.GET("/", func(c echo.Context) error {
+	v1.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
 			"message": "Hello World!",
 		})
 	})
 
-	e.POST("/register", cl.UserController.Register)
+	v1.POST("/register", cl.UserController.Register)
 }
