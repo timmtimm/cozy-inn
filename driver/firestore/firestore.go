@@ -1,19 +1,18 @@
-package database
+package firestore_driver
 
 import (
 	"context"
-	"cozy-inn/util"
 	"log"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 )
 
-func InitDB() *firestore.Client {
+func InitFirestore(config *firebase.Config) *firestore.Client {
 	// Use the application default credentials
 	ctx := context.Background()
-	conf := &firebase.Config{ProjectID: util.GetFirebaseEnv("project_id")}
-	app, err := firebase.NewApp(ctx, conf)
+
+	app, err := firebase.NewApp(ctx, config)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -22,6 +21,6 @@ func InitDB() *firestore.Client {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	defer client.Close()
+	// defer client.Close()
 	return client
 }
