@@ -10,7 +10,8 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"golang.org/x/crypto/bcrypt"
-	"google.golang.org/api/iterator"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type UserRepository struct {
@@ -36,31 +37,53 @@ func (ur *UserRepository) Register(userDomain *users.Domain) error {
 
 	rec.Password = string(password)
 
-	iter := ur.usersCollection().Where("email", "==", rec.Email).Documents(ur.ctx)
-	for {
-		_, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return err
-		}
+	doc, err := ur.usersCollection().Doc(rec.Email).Get(ur.ctx)
 
-		return errors.New("email already exists")
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			_, err = ur.usersCollection().Doc(rec.Email).Set(ur.ctx, Model{
+				Role:        rec.Role,
+				Name:        rec.Name,
+				Email:       rec.Email,
+				Password:    rec.Password,
+				ImageID_URL: rec.ImageID_URL,
+				CreatedAt:   time.Now(),
+				UpdatedAt:   time.Now(),
+			})
+			if err != nil {
+				log.Printf("An error has occurred: %s", err)
+				return err
+			}
+
+			return nil
+		}
 	}
 
-	_, err := ur.usersCollection().Doc(rec.Email).Set(ur.ctx, Model{
-		Role:        rec.Role,
-		Name:        rec.Name,
-		Email:       rec.Email,
-		Password:    rec.Password,
-		ImageID_URL: rec.ImageID_URL,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-	})
+	if doc != nil {
+		return errors.New("email already registered")
+	}
+
+	return errors.New("failed to register")
+}
+
+func (ur *UserRepository) Login(userDomain *users.Domain) error {
+	rec := FromDomain(userDomain)
+
+	doc, err := ur.usersCollection().Doc(rec.Email).Get(ur.ctx)
 	if err != nil {
-		log.Printf("An error has occurred: %s", err)
-		return err
+		if status.Code(err) == codes.NotFound {
+			return errors.New("email not registered")
+		}
+	}
+
+	userData := Model{}
+	if err := doc.DataTo(&userData); err != nil {
+		return errors.New("failed get data")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(userData.Password), []byte(rec.Password))
+	if err != nil {
+		return errors.New("wrong email or password")
 	}
 
 	return nil

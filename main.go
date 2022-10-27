@@ -7,6 +7,7 @@ import (
 	_userUseCase "cozy-inn/businesses/users"
 	_userController "cozy-inn/controller/users"
 	_driverFactory "cozy-inn/driver"
+	"fmt"
 
 	firestore "cozy-inn/driver/firestore"
 	util "cozy-inn/util"
@@ -40,5 +41,7 @@ func main() {
 
 	routeController.InitRoute(e)
 
-	e.Logger.Fatal(e.Start(":3000"))
+	appPort := fmt.Sprintf(":%s", util.GetConfig("APP_PORT"))
+
+	e.Logger.Fatal(e.Start(appPort))
 }

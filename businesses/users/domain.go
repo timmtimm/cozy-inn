@@ -16,8 +16,10 @@ type Domain struct {
 
 type UseCase interface {
 	Register(userDomain *Domain) error
+	Login(userDomain *Domain) (string, error)
 }
 
 type Repository interface {
 	Register(userDomain *Domain) error
+	Login(userDomain *Domain) error
 }

@@ -24,4 +24,5 @@ func (cl *ControllerList) InitRoute(e *echo.Echo) {
 	})
 
 	v1.POST("/register", cl.UserController.Register)
+	v1.POST("/login", cl.UserController.Login)
 }
