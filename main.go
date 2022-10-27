@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	_middleware "cozy-inn/app/middleware"
 	_route "cozy-inn/app/route"
+	_userUseCase "cozy-inn/businesses/users"
+	_userController "cozy-inn/controller/users"
 	_driverFactory "cozy-inn/driver"
 
 	firestore "cozy-inn/driver/firestore"
@@ -14,11 +17,17 @@ import (
 
 func main() {
 	e := echo.New()
+	ctx := context.Background()
 
-	FirestoreConfig := &firebase.Config{ProjectID: util.GetFirebaseEnv("project_id")}
+	FirestoreConfig := &firebase.Config{
+		ProjectID: util.GetFirebaseEnv("project_id"),
+	}
 
 	firestore := firestore.InitFirestore(FirestoreConfig)
-	UserRepository := _driverFactory.NewUserRepository(firestore)
+
+	userRepository := _driverFactory.NewUserRepository(firestore, ctx)
+	userUsecase := _userUseCase.NewUserUsecase(userRepository)
+	userController := _userController.NewUserController(userUsecase)
 
 	configLogger := _middleware.ConfigLogger{
 		Format: "[${time_rfc3339}] ${status} ${method} ${host} ${path} ${latency_human}" + "\n",
@@ -26,7 +35,7 @@ func main() {
 
 	routeController := _route.ControllerList{
 		LoggerMiddleware: configLogger.InitLogger(),
-		UserRepository:   UserRepository,
+		UserController:   userController,
 	}
 
 	routeController.InitRoute(e)

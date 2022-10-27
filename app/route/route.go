@@ -1,33 +1,27 @@
 package route
 
 import (
-	"context"
-	"cozy-inn/businesses/users"
+	"cozy-inn/controller/users"
 	"net/http"
 
-	"cloud.google.com/go/firestore"
 	"github.com/labstack/echo/v4"
 )
 
 type ControllerList struct {
 	LoggerMiddleware echo.MiddlewareFunc
-	UserRepository   users.Repository
-	Firestore        *firestore.Client
+	UserController   *users.UserController
 }
 
 func (cl *ControllerList) InitRoute(e *echo.Echo) {
 	e.Use(cl.LoggerMiddleware)
 
+	// v1 := e.Group("/api/v1/users")
+
 	e.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
-			"messages": "Hello World!",
+			"message": "Hello World!",
 		})
 	})
 
-	e.POST("/register", func(c echo.Context) error {
-		cl.UserRepository.Register(context.Background(), cl.Firestore)
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"messages": "Hello World!",
-		})
-	})
+	e.POST("/register", cl.UserController.Register)
 }
