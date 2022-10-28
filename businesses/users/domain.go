@@ -20,6 +20,7 @@ type UseCase interface {
 }
 
 type Repository interface {
+	GetuserByEmail(email string) Domain
 	Register(userDomain *Domain) error
 	Login(userDomain *Domain) error
 }

@@ -30,6 +30,22 @@ func (ur *UserRepository) usersCollection() *firestore.CollectionRef {
 	return ur.client.Collection("users")
 }
 
+func (ur *UserRepository) GetuserByEmail(email string) users.Domain {
+	doc, err := ur.usersCollection().Doc(email).Get(ur.ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return users.Domain{}
+		}
+	}
+
+	userData := Model{}
+	if err := doc.DataTo(&userData); err != nil {
+		return users.Domain{}
+	}
+
+	return userData.ToDomain()
+}
+
 func (ur *UserRepository) Register(userDomain *users.Domain) error {
 	password, _ := bcrypt.GenerateFromPassword([]byte(userDomain.Password), bcrypt.DefaultCost)
 

@@ -20,6 +20,15 @@ func main() {
 	e := echo.New()
 	ctx := context.Background()
 
+	configLogger := _middleware.ConfigLogger{
+		Format: "[${time_rfc3339}] ${status} ${method} ${host} ${path} ${latency_human}" + "\n",
+	}
+
+	configJWT := _middleware.ConfigJWT{
+		SecretJWT:       util.GetConfig("JWT_SECRET_KEY"),
+		ExpiresDuration: 1,
+	}
+
 	FirestoreConfig := &firebase.Config{
 		ProjectID: util.GetFirebaseEnv("project_id"),
 	}
@@ -27,15 +36,12 @@ func main() {
 	firestore := firestore.InitFirestore(FirestoreConfig)
 
 	userRepository := _driverFactory.NewUserRepository(firestore, ctx)
-	userUsecase := _userUseCase.NewUserUsecase(userRepository)
+	userUsecase := _userUseCase.NewUserUsecase(userRepository, &configJWT)
 	userController := _userController.NewUserController(userUsecase)
 
-	configLogger := _middleware.ConfigLogger{
-		Format: "[${time_rfc3339}] ${status} ${method} ${host} ${path} ${latency_human}" + "\n",
-	}
-
 	routeController := _route.ControllerList{
-		LoggerMiddleware: configLogger.InitLogger(),
+		LoggerMiddleware: configLogger.Init(),
+		JWTMiddleware:    configJWT.Init(),
 		UserController:   userController,
 	}
 

@@ -9,7 +9,7 @@ type ConfigLogger struct {
 	Format string
 }
 
-func (c *ConfigLogger) InitLogger() echo.MiddlewareFunc {
+func (c *ConfigLogger) Init() echo.MiddlewareFunc {
 	return middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: c.Format,
 	})
