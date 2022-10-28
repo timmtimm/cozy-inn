@@ -1,7 +1,10 @@
 package middleware
 
 import (
+	"cozy-inn/util"
 	"errors"
+	"net/http"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -45,47 +48,66 @@ func (jwtConf *ConfigJWT) GenerateToken(email string, role string) string {
 	return token
 }
 
-func (jwtConf *ConfigJWT) GetUser(c echo.Context) *JwtCustomClaims {
-	user := c.Get("user").(*jwt.Token)
-
-	_, err := jwtConf.CheckToken(user.Raw)
-
-	if err != nil {
-		return nil
-	}
-
-	claims := user.Claims.(*JwtCustomClaims)
-	return claims
+type RoleMiddleware struct {
+	Role []string
+	Func echo.HandlerFunc
 }
 
-func (jwtConf *ConfigJWT) CheckToken(token string) (*JwtCustomClaims, error) {
-	for _, tkn := range whitelist {
-		if tkn == token {
-			token, err := jwt.ParseWithClaims(
+func (rm RoleMiddleware) CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		authHeader := c.Request().Header.Get("Authorization")
+		token := strings.Replace(authHeader, "Bearer ", "", -1)
+
+		found := false
+		index := 0
+
+		for idx, tkn := range whitelist {
+			if tkn == token {
+				index = idx
+				found = true
+			}
+		}
+
+		if found {
+			t, err := jwt.ParseWithClaims(
 				token,
 				&JwtCustomClaims{},
 				func(token *jwt.Token) (interface{}, error) {
-					return []byte(jwtConf.SecretJWT), nil
+					return []byte(util.GetConfig("JWT_SECRET_KEY")), nil
 				},
 			)
+
 			if err != nil {
-				return nil, err
+				return c.JSON(http.StatusUnauthorized, map[string]string{
+					"message": "invalid token",
+				})
 			}
 
-			claims, ok := token.Claims.(*JwtCustomClaims)
+			claims, ok := t.Claims.(*JwtCustomClaims)
 			if !ok {
-				return nil, errors.New("couldn't parse claims")
+				return echo.NewHTTPError(http.StatusUnauthorized, errors.New("Unauthorized"))
 			}
 
 			if claims.ExpiresAt < time.Now().Local().Unix() {
-				return nil, errors.New("token expired")
+				whitelist = append(whitelist[:index], whitelist[index+1:]...)
+				return echo.NewHTTPError(http.StatusUnauthorized, errors.New("token expired"))
 			}
 
-			return claims, nil
+			for _, role := range rm.Role {
+				if claims.Role == role {
+					return rm.Func(c)
+				} else {
+					return c.JSON(http.StatusUnauthorized, map[string]string{
+						"message": "forbidden",
+					})
+				}
+			}
 		}
-	}
 
-	return nil, errors.New("token not found")
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": "unauthorized",
+		})
+	}
 }
 
 func Logout(token string) bool {

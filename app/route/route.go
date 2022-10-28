@@ -1,6 +1,7 @@
 package route
 
 import (
+	_middleware "cozy-inn/app/middleware"
 	"cozy-inn/controller/users"
 	"net/http"
 
@@ -17,14 +18,26 @@ type ControllerList struct {
 func (cl *ControllerList) InitRoute(e *echo.Echo) {
 	e.Use(cl.LoggerMiddleware)
 
-	v1 := e.Group("/api/v1")
-
-	v1.GET("/", func(c echo.Context) error {
+	e.GET("/api/v1/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
 			"message": "Hello World!",
 		})
 	})
 
-	v1.POST("/register", cl.UserController.Register)
-	v1.POST("/login", cl.UserController.Login)
+	user := e.Group("/api/v1/user")
+
+	user.POST("/register", cl.UserController.Register)
+	user.POST("/login", cl.UserController.Login)
+
+	userMiddleware := _middleware.RoleMiddleware{
+		Role: []string{"user"},
+	}
+
+	room := e.Group("/api/v1/room", userMiddleware.CheckToken, middleware.JWTWithConfig(cl.JWTMiddleware))
+
+	room.GET("/", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"message": "Hello Room!",
+		})
+	})
 }
