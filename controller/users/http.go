@@ -33,7 +33,9 @@ func (userCtrl *UserController) Register(c echo.Context) error {
 		})
 	}
 
-	if err := userCtrl.userUseCase.Register(userInput.ToDomain()); err != nil {
+	token, err := userCtrl.userUseCase.Register(userInput.ToDomain())
+
+	if err != nil {
 		return c.JSON(http.StatusConflict, map[string]string{
 			"message": err.Error(),
 		})
@@ -41,6 +43,7 @@ func (userCtrl *UserController) Register(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, map[string]string{
 		"message": "success to register",
+		"token":   token,
 	})
 }
 
@@ -55,7 +58,7 @@ func (userCtrl *UserController) Login(c echo.Context) error {
 
 	if userInput.Validate() != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "validation failed",
+			"message": "required filled form is invalid",
 		})
 	}
 
@@ -68,6 +71,7 @@ func (userCtrl *UserController) Login(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, map[string]string{
-		"token": token,
+		"message": "success to login",
+		"token":   token,
 	})
 }

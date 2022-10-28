@@ -17,8 +17,16 @@ func NewUserUsecase(ur Repository, jwtAuth *middleware.ConfigJWT) UseCase {
 	}
 }
 
-func (uu *UserUseCase) Register(userDomain *Domain) error {
-	return uu.userRepository.Register(userDomain)
+func (uu *UserUseCase) Register(userDomain *Domain) (string, error) {
+	err := uu.userRepository.Register(userDomain)
+
+	if err != nil {
+		return "", err
+	}
+
+	token := uu.jwtAuth.GenerateToken(userDomain.Email, userDomain.Role)
+
+	return token, nil
 }
 
 func (uu *UserUseCase) Login(userDomain *Domain) (string, error) {

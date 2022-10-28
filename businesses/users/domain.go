@@ -15,7 +15,7 @@ type Domain struct {
 }
 
 type UseCase interface {
-	Register(userDomain *Domain) error
+	Register(userDomain *Domain) (string, error)
 	Login(userDomain *Domain) (string, error)
 }
 
