@@ -6,8 +6,6 @@ import (
 	"errors"
 	"time"
 
-	"log"
-
 	"cloud.google.com/go/firestore"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
@@ -30,20 +28,20 @@ func (ur *UserRepository) usersCollection() *firestore.CollectionRef {
 	return ur.client.Collection("users")
 }
 
-func (ur *UserRepository) GetUserByEmail(email string) users.Domain {
+func (ur *UserRepository) GetUserByEmail(email string) (users.Domain, error) {
 	doc, err := ur.usersCollection().Doc(email).Get(ur.ctx)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
-			return users.Domain{}
+			return users.Domain{}, errors.New("user not found")
 		}
 	}
 
 	userData := Model{}
 	if err := doc.DataTo(&userData); err != nil {
-		return users.Domain{}
+		return users.Domain{}, err
 	}
 
-	return userData.ToDomain()
+	return userData.ToDomain(), nil
 }
 
 func (ur *UserRepository) Register(userDomain *users.Domain) error {
@@ -68,7 +66,6 @@ func (ur *UserRepository) Register(userDomain *users.Domain) error {
 				UpdatedAt:   time.Now(),
 			})
 			if err != nil {
-				log.Printf("An error has occurred: %s", err)
 				return err
 			}
 
@@ -108,4 +105,30 @@ func (ur *UserRepository) Login(userDomain *users.Domain) error {
 	}
 
 	return nil
+}
+
+func (ur *UserRepository) Update(email string, userDomain *users.Domain) (users.Domain, error) {
+	doc, err := ur.usersCollection().Doc(email).Get(ur.ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return users.Domain{}, errors.New("email not registered")
+		}
+	}
+
+	userData := Model{}
+	if err := doc.DataTo(&userData); err != nil {
+		return users.Domain{}, err
+	}
+
+	rec := FromDomain(userDomain)
+	userData.Name = rec.Name
+	userData.ImageID_URL = rec.ImageID_URL
+	userData.UpdatedAt = time.Now()
+
+	_, err = ur.usersCollection().Doc(email).Set(ur.ctx, userData)
+	if err != nil {
+		return users.Domain{}, errors.New("failed to update")
+	}
+
+	return userData.ToDomain(), nil
 }

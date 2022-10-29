@@ -31,7 +31,8 @@ func (cl *ControllerList) InitRoute(e *echo.Echo) {
 	user := e.Group("/api/v1/user")
 	user.POST("/register", cl.UserController.UserRegister)
 	user.POST("/login", cl.UserController.Login)
-	user.GET("/profile", cl.UserController.UserProfile, userMiddleware.CheckToken)
+	user.GET("/profile", cl.UserController.GetUserProfile, userMiddleware.CheckToken)
+	user.POST("/profile", cl.UserController.UpdateUserProfile, userMiddleware.CheckToken)
 
 	room := e.Group("/api/v1/room")
 	room.GET("/", func(c echo.Context) error {
@@ -41,9 +42,9 @@ func (cl *ControllerList) InitRoute(e *echo.Echo) {
 	})
 
 	resepsionist := e.Group("/api/v1/resepsionist", resepsionistMiddleware.CheckToken)
-	resepsionist.GET("/profile", cl.UserController.UserProfile)
+	resepsionist.GET("/profile", cl.UserController.GetUserProfile)
 
 	admin := e.Group("/api/v1/admin", adminMiddleware.CheckToken)
 	admin.POST("/register", cl.UserController.SudoRegister)
-	admin.GET("/profile", cl.UserController.UserProfile)
+	// admin.POST("/profile", cl.UserController.SudoGetUserProfile)
 }

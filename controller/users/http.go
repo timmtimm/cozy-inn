@@ -116,7 +116,7 @@ func (userCtrl *UserController) Login(c echo.Context) error {
 	})
 }
 
-func (userCtrl *UserController) UserProfile(c echo.Context) error {
+func (userCtrl *UserController) GetUserProfile(c echo.Context) error {
 	email, err := middleware.GetEmailByToken(c)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
@@ -124,10 +124,79 @@ func (userCtrl *UserController) UserProfile(c echo.Context) error {
 		})
 	}
 
-	user := userCtrl.userUseCase.GetUserByEmail(email)
+	user, err := userCtrl.userUseCase.GetUserByEmail(email)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "success to get user profile",
+		"user":    response.FromDomain(user),
+	})
+}
+
+func (userCtrl *UserController) SudoGetUserProfile(c echo.Context) error {
+	userInput := request.Email{}
+
+	if c.Bind(&userInput) != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	if userInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "required filled form is invalid",
+		})
+	}
+
+	user, err := userCtrl.userUseCase.GetUserByEmail(userInput.Email)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success to get user profile",
+		"user":    response.FromDomain(user),
+	})
+}
+
+func (userCtrl *UserController) UpdateUserProfile(c echo.Context) error {
+	email, err := middleware.GetEmailByToken(c)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	userInput := request.UserUpdate{}
+
+	if c.Bind(&userInput) != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	if userInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "required filled form is invalid",
+		})
+	}
+
+	user, err := userCtrl.userUseCase.UpdateUser(email, userInput.ToDomain())
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success to update user profile",
 		"user":    response.FromDomain(user),
 	})
 }
