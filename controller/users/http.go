@@ -116,6 +116,20 @@ func (userCtrl *UserController) Login(c echo.Context) error {
 	})
 }
 
+func (userCtrl *UserController) GetUserList(c echo.Context) error {
+	userList, err := userCtrl.userUseCase.GetUserList()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success to get user list",
+		"user":    userList,
+	})
+}
+
 func (userCtrl *UserController) GetUserProfile(c echo.Context) error {
 	email, err := middleware.GetEmailByToken(c)
 	if err != nil {

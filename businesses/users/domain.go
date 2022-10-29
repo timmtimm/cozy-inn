@@ -8,7 +8,7 @@ type Domain struct {
 	Role        string
 	Name        string
 	Email       string
-	Password    string
+	Password    string `json:"-"`
 	ImageID_URL string
 	Status      string
 	CreatedAt   time.Time
@@ -20,6 +20,7 @@ type UseCase interface {
 	Login(userDomain *Domain) (string, error)
 	GetUserByEmail(email string) (Domain, error)
 	UpdateUser(email string, userDomain *Domain) (Domain, error)
+	GetUserList() ([]Domain, error)
 }
 
 type Repository interface {
@@ -27,4 +28,5 @@ type Repository interface {
 	Register(userDomain *Domain) error
 	Login(userDomain *Domain) error
 	Update(email string, userDomain *Domain) (Domain, error)
+	GetUserList() ([]Domain, error)
 }

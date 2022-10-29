@@ -8,6 +8,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/api/iterator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -131,4 +132,28 @@ func (ur *UserRepository) Update(email string, userDomain *users.Domain) (users.
 	}
 
 	return userData.ToDomain(), nil
+}
+
+func (ur *UserRepository) GetUserList() ([]users.Domain, error) {
+	iter := ur.usersCollection().Documents(ur.ctx)
+	userData := []users.Domain{}
+
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		user := Model{}
+		if err := doc.DataTo(&user); err != nil {
+			return nil, err
+		}
+
+		userData = append(userData, user.ToDomain())
+	}
+
+	return userData, nil
 }

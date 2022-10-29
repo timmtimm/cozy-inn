@@ -59,3 +59,12 @@ func (uu *UserUseCase) UpdateUser(email string, userDomain *Domain) (Domain, err
 
 	return user, nil
 }
+
+func (uu *UserUseCase) GetUserList() ([]Domain, error) {
+	users, err := uu.userRepository.GetUserList()
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}

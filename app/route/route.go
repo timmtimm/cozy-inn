@@ -46,6 +46,7 @@ func (cl *ControllerList) InitRoute(e *echo.Echo) {
 	resepsionist.POST("/profile", cl.UserController.UpdateUserProfile)
 
 	admin := e.Group("/api/v1/admin", adminMiddleware.CheckToken)
+	admin.GET("/user-list", cl.UserController.GetUserList)
 	admin.POST("/register", cl.UserController.SudoRegister)
 	admin.POST("/profile", cl.UserController.SudoGetUserProfile)
 }
