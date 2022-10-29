@@ -68,14 +68,25 @@ func (req *UserUpdate) Validate() error {
 	return err
 }
 
-type Email struct {
-	Email string `json:"email" validate:"required,email" firestore:"email"`
+type SudoUpdate struct {
+	Name        string `json:"name" validate:"required" firestore:"name"`
+	Email       string `json:"email" validate:"required,email" firestore:"email"`
+	ImageID_URL string `json:"imageID_URL" validate:"required,url" firestore:"imageID_URL"`
+	Role        string `json:"role" validate:"required" firestore:"role"`
+	Status      string `json:"status" validate:"required" firestore:"status"`
 }
 
-func (req *Email) ToDomain() *users.Domain {
-	return &users.Domain{Email: req.Email}
+func (req *SudoUpdate) ToDomain() *users.Domain {
+	return &users.Domain{
+		Name:        req.Name,
+		Email:       req.Email,
+		ImageID_URL: req.ImageID_URL,
+		Role:        req.Role,
+		Status:      req.Status,
+	}
 }
-func (req *Email) Validate() error {
+
+func (req *SudoUpdate) Validate() error {
 	validate := validator.New()
 	err := validate.Struct(req)
 	return err

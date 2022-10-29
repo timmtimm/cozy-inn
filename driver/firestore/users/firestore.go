@@ -134,6 +134,34 @@ func (ur *UserRepository) Update(email string, userDomain *users.Domain) (users.
 	return userData.ToDomain(), nil
 }
 
+func (ur *UserRepository) SudoUpdate(email string, userDomain *users.Domain) (users.Domain, error) {
+	doc, err := ur.usersCollection().Doc(email).Get(ur.ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return users.Domain{}, errors.New("email not registered")
+		}
+	}
+
+	userData := Model{}
+	if err := doc.DataTo(&userData); err != nil {
+		return users.Domain{}, err
+	}
+
+	rec := FromDomain(userDomain)
+	userData.Name = rec.Name
+	userData.Role = rec.Role
+	userData.Status = rec.Status
+	userData.ImageID_URL = rec.ImageID_URL
+	userData.UpdatedAt = time.Now()
+
+	_, err = ur.usersCollection().Doc(email).Set(ur.ctx, userData)
+	if err != nil {
+		return users.Domain{}, errors.New("failed to update")
+	}
+
+	return userData.ToDomain(), nil
+}
+
 func (ur *UserRepository) GetUserList() ([]users.Domain, error) {
 	iter := ur.usersCollection().Documents(ur.ctx)
 	userData := []users.Domain{}

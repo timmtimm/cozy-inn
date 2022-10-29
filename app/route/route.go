@@ -49,4 +49,5 @@ func (cl *ControllerList) InitRoute(e *echo.Echo) {
 	admin.GET("/user-list", cl.UserController.GetUserList)
 	admin.POST("/register", cl.UserController.SudoRegister)
 	admin.GET("/profile/:user-email", cl.UserController.SudoGetUserProfile)
+	admin.POST("/profile/:user-email", cl.UserController.SudoUpdateUserProfile)
 }

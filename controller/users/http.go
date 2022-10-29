@@ -167,6 +167,36 @@ func (userCtrl *UserController) SudoGetUserProfile(c echo.Context) error {
 	})
 }
 
+func (userCtrl *UserController) SudoUpdateUserProfile(c echo.Context) error {
+	userEmail := c.Param("user-email")
+
+	userInput := request.SudoUpdate{}
+
+	if c.Bind(&userInput) != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	if userInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "validation failed",
+		})
+	}
+
+	user, err := userCtrl.userUseCase.SudoUpdateUser(userEmail, userInput.ToDomain())
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success to update user profile",
+		"user":    response.FromDomain(user),
+	})
+}
+
 func (userCtrl *UserController) UpdateUserProfile(c echo.Context) error {
 	email, err := middleware.GetEmailByToken(c)
 	if err != nil {
