@@ -18,11 +18,13 @@ type Domain struct {
 type UseCase interface {
 	Register(userDomain *Domain) (string, error)
 	Login(userDomain *Domain) (string, error)
-	GetUserByEmail(email string) Domain
+	GetUserByEmail(email string) (Domain, error)
+	UpdateUser(email string, userDomain *Domain) (Domain, error)
 }
 
 type Repository interface {
-	GetUserByEmail(email string) Domain
+	GetUserByEmail(email string) (Domain, error)
 	Register(userDomain *Domain) error
 	Login(userDomain *Domain) error
+	Update(email string, userDomain *Domain) (Domain, error)
 }

@@ -17,9 +17,11 @@ type User struct {
 
 func FromDomain(domain users.Domain) User {
 	return User{
+		Name:        domain.Name,
 		Role:        domain.Role,
 		Email:       domain.Email,
 		ImageID_URL: domain.ImageID_URL,
+		Status:      domain.Status,
 		CreatedAt:   domain.CreatedAt,
 		UpdatedAt:   domain.UpdatedAt,
 	}

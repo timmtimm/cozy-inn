@@ -49,3 +49,34 @@ func (req *UserLogin) Validate() error {
 	err := validate.Struct(req)
 	return err
 }
+
+type UserUpdate struct {
+	Name        string `json:"name" validate:"required" firestore:"name"`
+	ImageID_URL string `json:"imageID_URL" validate:"required,url" firestore:"imageID_URL"`
+}
+
+func (req *UserUpdate) ToDomain() *users.Domain {
+	return &users.Domain{
+		Name:        req.Name,
+		ImageID_URL: req.ImageID_URL,
+	}
+}
+
+func (req *UserUpdate) Validate() error {
+	validate := validator.New()
+	err := validate.Struct(req)
+	return err
+}
+
+type Email struct {
+	Email string `json:"email" validate:"required,email" firestore:"email"`
+}
+
+func (req *Email) ToDomain() *users.Domain {
+	return &users.Domain{Email: req.Email}
+}
+func (req *Email) Validate() error {
+	validate := validator.New()
+	err := validate.Struct(req)
+	return err
+}

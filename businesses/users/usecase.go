@@ -33,12 +33,29 @@ func (uu *UserUseCase) Login(userDomain *Domain) (string, error) {
 		return "", err
 	}
 
-	userData := uu.userRepository.GetUserByEmail(userDomain.Email)
-	token := uu.jwtAuth.GenerateToken(userData.Email, userData.Role)
+	userData, err := uu.userRepository.GetUserByEmail(userDomain.Email)
+	if err != nil {
+		return "", err
+	}
 
+	token := uu.jwtAuth.GenerateToken(userData.Email, userData.Role)
 	return token, nil
 }
 
-func (uu *UserUseCase) GetUserByEmail(email string) Domain {
-	return uu.userRepository.GetUserByEmail(email)
+func (uu *UserUseCase) GetUserByEmail(email string) (Domain, error) {
+	user, err := uu.userRepository.GetUserByEmail(email)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	return user, nil
+}
+
+func (uu *UserUseCase) UpdateUser(email string, userDomain *Domain) (Domain, error) {
+	user, err := uu.userRepository.Update(email, userDomain)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	return user, nil
 }
