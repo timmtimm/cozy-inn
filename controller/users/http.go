@@ -152,21 +152,9 @@ func (userCtrl *UserController) GetUserProfile(c echo.Context) error {
 }
 
 func (userCtrl *UserController) SudoGetUserProfile(c echo.Context) error {
-	userInput := request.Email{}
+	userEmail := c.Param("user-email")
 
-	if c.Bind(&userInput) != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "invalid request",
-		})
-	}
-
-	if userInput.Validate() != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "required filled form is invalid",
-		})
-	}
-
-	user, err := userCtrl.userUseCase.GetUserByEmail(userInput.Email)
+	user, err := userCtrl.userUseCase.GetUserByEmail(userEmail)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"message": err.Error(),
