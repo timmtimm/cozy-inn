@@ -11,6 +11,7 @@ type User struct {
 	Email       string    `json:"email" firestore:"email"`
 	Password    string    `json:"password" firestore:"password"`
 	ImageID_URL string    `json:"imageID_URL" firestore:"imageID_URL"`
+	Status      string    `json:"status" firestore:"status"`
 	CreatedAt   time.Time `json:"createdAt" firestore:"createdAt,serverTimestamp"`
 	UpdatedAt   time.Time `json:"updatedAt" firestore:"updatedAt,omitempty"`
 }

@@ -30,7 +30,7 @@ func (ur *UserRepository) usersCollection() *firestore.CollectionRef {
 	return ur.client.Collection("users")
 }
 
-func (ur *UserRepository) GetuserByEmail(email string) users.Domain {
+func (ur *UserRepository) GetUserByEmail(email string) users.Domain {
 	doc, err := ur.usersCollection().Doc(email).Get(ur.ctx)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
@@ -63,6 +63,7 @@ func (ur *UserRepository) Register(userDomain *users.Domain) error {
 				Email:       rec.Email,
 				Password:    rec.Password,
 				ImageID_URL: rec.ImageID_URL,
+				Status:      rec.Status,
 				CreatedAt:   time.Now(),
 				UpdatedAt:   time.Now(),
 			})
@@ -95,6 +96,10 @@ func (ur *UserRepository) Login(userDomain *users.Domain) error {
 	userData := Model{}
 	if err := doc.DataTo(&userData); err != nil {
 		return errors.New("failed get data")
+	}
+
+	if userData.Status == "inactive" {
+		return errors.New("user is inactive")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(userData.Password), []byte(rec.Password))

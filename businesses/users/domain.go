@@ -10,6 +10,7 @@ type Domain struct {
 	Email       string
 	Password    string
 	ImageID_URL string
+	Status      string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
@@ -20,7 +21,7 @@ type UseCase interface {
 }
 
 type Repository interface {
-	GetuserByEmail(email string) Domain
+	GetUserByEmail(email string) Domain
 	Register(userDomain *Domain) error
 	Login(userDomain *Domain) error
 }

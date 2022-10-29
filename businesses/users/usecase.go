@@ -2,7 +2,6 @@ package users
 
 import (
 	"cozy-inn/app/middleware"
-	"errors"
 )
 
 type UserUseCase struct {
@@ -30,11 +29,11 @@ func (uu *UserUseCase) Register(userDomain *Domain) (string, error) {
 }
 
 func (uu *UserUseCase) Login(userDomain *Domain) (string, error) {
-	if uu.userRepository.Login(userDomain) != nil {
-		return "", errors.New("wrong email or password")
+	if err := uu.userRepository.Login(userDomain); err != nil {
+		return "", err
 	}
 
-	userData := uu.userRepository.GetuserByEmail(userDomain.Email)
+	userData := uu.userRepository.GetUserByEmail(userDomain.Email)
 	token := uu.jwtAuth.GenerateToken(userData.Email, userData.Role)
 
 	return token, nil

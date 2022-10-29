@@ -18,6 +18,10 @@ type ControllerList struct {
 func (cl *ControllerList) InitRoute(e *echo.Echo) {
 	e.Use(cl.LoggerMiddleware)
 
+	// userMiddleware := _middleware.RoleMiddleware{Role: []string{"user"}}
+	adminMiddleware := _middleware.RoleMiddleware{Role: []string{"admin"}}
+	// resepsionistMiddleware := _middleware.RoleMiddleware{Role: []string{"resepsionist"}}
+
 	e.GET("/api/v1/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
 			"message": "Hello World!",
@@ -26,18 +30,18 @@ func (cl *ControllerList) InitRoute(e *echo.Echo) {
 
 	user := e.Group("/api/v1/user")
 
-	user.POST("/register", cl.UserController.Register)
+	user.POST("/register", cl.UserController.UserRegister)
 	user.POST("/login", cl.UserController.Login)
 
-	userMiddleware := _middleware.RoleMiddleware{
-		Role: []string{"user"},
-	}
-
-	room := e.Group("/api/v1/room", userMiddleware.CheckToken, middleware.JWTWithConfig(cl.JWTMiddleware))
+	room := e.Group("/api/v1/room")
 
 	room.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
 			"message": "Hello Room!",
 		})
 	})
+
+	admin := e.Group("/api/v1/admin", adminMiddleware.CheckToken)
+
+	admin.POST("/register", cl.UserController.SudoRegister)
 }

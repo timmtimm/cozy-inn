@@ -70,7 +70,7 @@ func (rm RoleMiddleware) CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 
 		claims, ok := t.Claims.(*JwtCustomClaims)
 		if !ok {
-			return echo.NewHTTPError(http.StatusUnauthorized, errors.New("Unauthorized"))
+			return echo.NewHTTPError(http.StatusUnauthorized, errors.New("unauthorized"))
 		}
 
 		if claims.ExpiresAt < time.Now().Local().Unix() {

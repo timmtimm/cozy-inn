@@ -18,8 +18,8 @@ func NewUserController(userUC users.UseCase) *UserController {
 	}
 }
 
-func (userCtrl *UserController) Register(c echo.Context) error {
-	userInput := request.UserRegister{}
+func (userCtrl *UserController) UserRegister(c echo.Context) error {
+	userInput := request.User{}
 
 	if c.Bind(&userInput) != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
@@ -27,6 +27,44 @@ func (userCtrl *UserController) Register(c echo.Context) error {
 		})
 	}
 
+	userInput.Role = "user"
+	userInput.Status = "active"
+	if userInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "validation failed",
+		})
+	}
+
+	token, err := userCtrl.userUseCase.Register(userInput.ToDomain())
+
+	if err != nil {
+		return c.JSON(http.StatusConflict, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusCreated, map[string]string{
+		"message": "success to register",
+		"token":   token,
+	})
+}
+
+func (userCtrl *UserController) SudoRegister(c echo.Context) error {
+	userInput := request.User{}
+
+	if c.Bind(&userInput) != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	if userInput.Role == "admin" {
+		return c.JSON(http.StatusForbidden, map[string]string{
+			"message": "you can't register admin",
+		})
+	}
+
+	userInput.Status = "active"
 	if userInput.Validate() != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"message": "validation failed",

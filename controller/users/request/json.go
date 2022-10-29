@@ -6,25 +6,27 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type UserRegister struct {
+type User struct {
 	Name        string `json:"name" validate:"required" firestore:"name"`
 	Email       string `json:"email" validate:"required,email" firestore:"email"`
 	Password    string `json:"password" validate:"required" firestore:"password"`
 	ImageID_URL string `json:"imageID_URL" validate:"required,url" firestore:"imageID_URL"`
-	Role        string `json:"role" firestore:"role"`
+	Role        string `json:"role" validate:"required" firestore:"role"`
+	Status      string `json:"status" validate:"required" firestore:"status"`
 }
 
-func (req *UserRegister) ToDomain() *users.Domain {
+func (req *User) ToDomain() *users.Domain {
 	return &users.Domain{
 		Name:        req.Name,
 		Email:       req.Email,
 		Password:    req.Password,
 		ImageID_URL: req.ImageID_URL,
 		Role:        req.Role,
+		Status:      req.Status,
 	}
 }
 
-func (req *UserRegister) Validate() error {
+func (req *User) Validate() error {
 	validate := validator.New()
 	err := validate.Struct(req)
 	return err
