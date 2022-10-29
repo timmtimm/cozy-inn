@@ -12,8 +12,6 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-var whitelist []string = make([]string, 5)
-
 type JwtCustomClaims struct {
 	Email string `json:"email"`
 	Role  string `json:"role"`
@@ -43,8 +41,6 @@ func (jwtConf *ConfigJWT) GenerateToken(email string, role string) string {
 
 	token, _ := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(jwtConf.SecretJWT))
 
-	whitelist = append(whitelist, token)
-
 	return token
 }
 
@@ -58,49 +54,36 @@ func (rm RoleMiddleware) CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 		authHeader := c.Request().Header.Get("Authorization")
 		token := strings.Replace(authHeader, "Bearer ", "", -1)
 
-		found := false
-		index := 0
+		t, err := jwt.ParseWithClaims(
+			token,
+			&JwtCustomClaims{},
+			func(token *jwt.Token) (interface{}, error) {
+				return []byte(util.GetConfig("JWT_SECRET_KEY")), nil
+			},
+		)
 
-		for idx, tkn := range whitelist {
-			if tkn == token {
-				index = idx
-				found = true
-			}
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, map[string]string{
+				"message": "invalid token",
+			})
 		}
 
-		if found {
-			t, err := jwt.ParseWithClaims(
-				token,
-				&JwtCustomClaims{},
-				func(token *jwt.Token) (interface{}, error) {
-					return []byte(util.GetConfig("JWT_SECRET_KEY")), nil
-				},
-			)
+		claims, ok := t.Claims.(*JwtCustomClaims)
+		if !ok {
+			return echo.NewHTTPError(http.StatusUnauthorized, errors.New("Unauthorized"))
+		}
 
-			if err != nil {
+		if claims.ExpiresAt < time.Now().Local().Unix() {
+			return echo.NewHTTPError(http.StatusUnauthorized, errors.New("token expired"))
+		}
+
+		for _, role := range rm.Role {
+			if claims.Role == role {
+				return next(c)
+			} else {
 				return c.JSON(http.StatusUnauthorized, map[string]string{
-					"message": "invalid token",
+					"message": "forbidden",
 				})
-			}
-
-			claims, ok := t.Claims.(*JwtCustomClaims)
-			if !ok {
-				return echo.NewHTTPError(http.StatusUnauthorized, errors.New("Unauthorized"))
-			}
-
-			if claims.ExpiresAt < time.Now().Local().Unix() {
-				whitelist = append(whitelist[:index], whitelist[index+1:]...)
-				return echo.NewHTTPError(http.StatusUnauthorized, errors.New("token expired"))
-			}
-
-			for _, role := range rm.Role {
-				if claims.Role == role {
-					return rm.Func(c)
-				} else {
-					return c.JSON(http.StatusUnauthorized, map[string]string{
-						"message": "forbidden",
-					})
-				}
 			}
 		}
 
@@ -108,14 +91,4 @@ func (rm RoleMiddleware) CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 			"message": "unauthorized",
 		})
 	}
-}
-
-func Logout(token string) bool {
-	for idx, tkn := range whitelist {
-		if tkn == token {
-			whitelist = append(whitelist[:idx], whitelist[idx+1:]...)
-		}
-	}
-
-	return true
 }
