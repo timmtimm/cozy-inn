@@ -38,3 +38,7 @@ func (uu *UserUseCase) Login(userDomain *Domain) (string, error) {
 
 	return token, nil
 }
+
+func (uu *UserUseCase) GetUserByEmail(email string) Domain {
+	return uu.userRepository.GetUserByEmail(email)
+}

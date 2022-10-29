@@ -92,3 +92,26 @@ func (rm RoleMiddleware) CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 		})
 	}
 }
+
+func GetEmailByToken(c echo.Context) (string, error) {
+	authHeader := c.Request().Header.Get("Authorization")
+	token := strings.Replace(authHeader, "Bearer ", "", -1)
+
+	t, err := jwt.ParseWithClaims(
+		token,
+		&JwtCustomClaims{},
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(util.GetConfig("JWT_SECRET_KEY")), nil
+		},
+	)
+	if err != nil {
+		return "", err
+	}
+
+	claims, ok := t.Claims.(*JwtCustomClaims)
+	if !ok {
+		return "", errors.New("unauthorized")
+	}
+
+	return claims.Email, nil
+}
