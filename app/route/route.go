@@ -18,9 +18,9 @@ type ControllerList struct {
 func (cl *ControllerList) InitRoute(e *echo.Echo) {
 	e.Use(cl.LoggerMiddleware)
 
-	// userMiddleware := _middleware.RoleMiddleware{Role: []string{"user"}}
+	userMiddleware := _middleware.RoleMiddleware{Role: []string{"user"}}
 	adminMiddleware := _middleware.RoleMiddleware{Role: []string{"admin"}}
-	// resepsionistMiddleware := _middleware.RoleMiddleware{Role: []string{"resepsionist"}}
+	resepsionistMiddleware := _middleware.RoleMiddleware{Role: []string{"resepsionist"}}
 
 	e.GET("/api/v1/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
@@ -29,19 +29,21 @@ func (cl *ControllerList) InitRoute(e *echo.Echo) {
 	})
 
 	user := e.Group("/api/v1/user")
-
 	user.POST("/register", cl.UserController.UserRegister)
 	user.POST("/login", cl.UserController.Login)
+	user.GET("/profile", cl.UserController.UserProfile, userMiddleware.CheckToken)
 
 	room := e.Group("/api/v1/room")
-
 	room.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
 			"message": "Hello Room!",
 		})
 	})
 
-	admin := e.Group("/api/v1/admin", adminMiddleware.CheckToken)
+	resepsionist := e.Group("/api/v1/resepsionist", resepsionistMiddleware.CheckToken)
+	resepsionist.GET("/profile", cl.UserController.UserProfile)
 
+	admin := e.Group("/api/v1/admin", adminMiddleware.CheckToken)
 	admin.POST("/register", cl.UserController.SudoRegister)
+	admin.GET("/profile", cl.UserController.UserProfile)
 }

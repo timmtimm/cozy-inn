@@ -1,8 +1,10 @@
 package users
 
 import (
+	"cozy-inn/app/middleware"
 	"cozy-inn/businesses/users"
 	"cozy-inn/controller/users/request"
+	"cozy-inn/controller/users/response"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -111,5 +113,21 @@ func (userCtrl *UserController) Login(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{
 		"message": "success to login",
 		"token":   token,
+	})
+}
+
+func (userCtrl *UserController) UserProfile(c echo.Context) error {
+	email, err := middleware.GetEmailByToken(c)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	user := userCtrl.userUseCase.GetUserByEmail(email)
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success to get user profile",
+		"user":    response.FromDomain(user),
 	})
 }
