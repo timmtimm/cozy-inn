@@ -73,8 +73,8 @@ func (uu *UserUseCase) GetUserByEmail(email string) (Domain, error) {
 	return user, nil
 }
 
-func (uu *UserUseCase) UpdateUserStatus(email string) (Domain, error) {
-	user, err := uu.userRepository.UpdateUserStatus(email)
+func (uu *UserUseCase) AdminUpdateUser(email string, userDomain *Domain) (Domain, error) {
+	user, err := uu.userRepository.AdminUpdateUser(email, userDomain)
 	if err != nil {
 		return Domain{}, err
 	}

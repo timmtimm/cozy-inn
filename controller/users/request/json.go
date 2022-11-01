@@ -12,7 +12,7 @@ type User struct {
 	Password    string `json:"password" validate:"required" firestore:"password"`
 	ImageID_URL string `json:"imageID_URL" validate:"required,url" firestore:"imageID_URL"`
 	Role        string `json:"role" validate:"required" firestore:"role"`
-	Status      bool   `json:"status" validate:"required" firestore:"status"`
+	Status      bool   `json:"status" firestore:"status"`
 }
 
 func (req *User) ToDomain() *users.Domain {
@@ -63,6 +63,24 @@ func (req *UserUpdate) ToDomain() *users.Domain {
 }
 
 func (req *UserUpdate) Validate() error {
+	validate := validator.New()
+	err := validate.Struct(req)
+	return err
+}
+
+type AdminUpdate struct {
+	Role   string `json:"role" validate:"required" firestore:"role"`
+	Status bool   `json:"status" firestore:"status"`
+}
+
+func (req *AdminUpdate) ToDomain() *users.Domain {
+	return &users.Domain{
+		Role:   req.Role,
+		Status: req.Status,
+	}
+}
+
+func (req *AdminUpdate) Validate() error {
 	validate := validator.New()
 	err := validate.Struct(req)
 	return err

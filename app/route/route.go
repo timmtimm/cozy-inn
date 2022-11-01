@@ -38,7 +38,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user.POST("/register", cl.UserController.UserRegister)
 	user.POST("/login", cl.UserController.Login)
 	user.GET("/profile", cl.UserController.GetUserProfile, userReceptionistMiddleware.CheckToken)
-	user.POST("/profile", cl.UserController.UpdateUserProfile, userReceptionistMiddleware.CheckToken)
+	user.PUT("/profile", cl.UserController.UpdateUserProfile, userReceptionistMiddleware.CheckToken)
 
 	room := e.Group("/api/v1/room")
 	room.GET("/", cl.RoomController.GetAllRoom)
@@ -50,5 +50,5 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	admin.GET("/user-list", cl.UserController.GetUserList)
 	admin.POST("/register", cl.UserController.SudoRegister)
 	admin.GET("/profile/:user-email", cl.UserController.SudoGetUserProfile)
-	admin.POST("/profile/:user-email", cl.UserController.UpdateUserStatus)
+	admin.PUT("/profile/:user-email", cl.UserController.AdminUpdateUser)
 }

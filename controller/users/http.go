@@ -161,10 +161,23 @@ func (userCtrl *UserController) SudoGetUserProfile(c echo.Context) error {
 	})
 }
 
-func (userCtrl *UserController) UpdateUserStatus(c echo.Context) error {
+func (userCtrl *UserController) AdminUpdateUser(c echo.Context) error {
 	userEmail := c.Param("user-email")
 
-	user, err := userCtrl.userUseCase.UpdateUserStatus(userEmail)
+	userInput := request.AdminUpdate{}
+	if c.Bind(&userInput) != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	if userInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "required filled form is invalid",
+		})
+	}
+
+	user, err := userCtrl.userUseCase.AdminUpdateUser(userEmail, userInput.ToDomain())
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"message": err.Error(),
