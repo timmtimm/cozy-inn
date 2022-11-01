@@ -60,12 +60,6 @@ func (userCtrl *UserController) SudoRegister(c echo.Context) error {
 		})
 	}
 
-	if userInput.Role == "admin" {
-		return c.JSON(http.StatusForbidden, map[string]string{
-			"message": "you can't register admin",
-		})
-	}
-
 	userInput.Status = true
 	if userInput.Validate() != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
@@ -73,7 +67,7 @@ func (userCtrl *UserController) SudoRegister(c echo.Context) error {
 		})
 	}
 
-	token, err := userCtrl.userUseCase.Register(userInput.ToDomain())
+	token, err := userCtrl.userUseCase.SudoRegister(userInput.ToDomain())
 
 	if err != nil {
 		return c.JSON(http.StatusConflict, map[string]string{
