@@ -17,14 +17,16 @@ type Domain struct {
 }
 
 type RoomCondition struct {
-	Number int
-	Status string
+	Number int    `json:"number" validate:"required" firestore:"number"`
+	Status string `json:"status" validate:"required" firestore:"status"`
 }
 
 type UseCase interface {
 	GetAllRoom() ([]Domain, error)
+	CreateRoom(roomDomain *Domain) error
 }
 
 type Repository interface {
 	GetAllRoom() ([]Domain, error)
+	CreateRoom(roomDomain *Domain) error
 }

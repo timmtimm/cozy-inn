@@ -134,7 +134,7 @@ func (ur *UserRepository) Update(email string, userDomain *users.Domain) (users.
 	return userData.ToDomain(), nil
 }
 
-func (ur *UserRepository) UpdateUserStatus(email string) (users.Domain, error) {
+func (ur *UserRepository) AdminUpdateUser(email string, userDomain *users.Domain) (users.Domain, error) {
 	doc, err := ur.usersCollection().Doc(email).Get(ur.ctx)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
@@ -147,7 +147,10 @@ func (ur *UserRepository) UpdateUserStatus(email string) (users.Domain, error) {
 		return users.Domain{}, err
 	}
 
-	userData.Status = !userData.Status
+	rec := FromDomain(userDomain)
+
+	userData.Status = rec.Status
+	userData.Role = rec.Role
 	userData.UpdatedAt = time.Now()
 
 	_, err = ur.usersCollection().Doc(email).Set(ur.ctx, userData)
@@ -180,4 +183,13 @@ func (ur *UserRepository) GetUserList() ([]users.Domain, error) {
 	}
 
 	return userData, nil
+}
+
+func (ur *UserRepository) Delete(email string) error {
+	_, err := ur.usersCollection().Doc(email).Delete(ur.ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

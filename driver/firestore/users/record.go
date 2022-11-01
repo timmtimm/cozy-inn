@@ -13,7 +13,7 @@ type Model struct {
 	ImageID_URL string    `firestore:"imageID_URL"`
 	Status      bool      `firestore:"status"`
 	CreatedAt   time.Time `firestore:"createdAt"`
-	UpdatedAt   time.Time `firestore:"updatedAt,omitempty"`
+	UpdatedAt   time.Time `firestore:"updatedAt"`
 }
 
 func FromDomain(domain *users.Domain) *Model {

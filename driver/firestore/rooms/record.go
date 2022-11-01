@@ -14,7 +14,7 @@ type Model struct {
 	Facilities     []string              `firestore:"facilities"`
 	Capacity       int                   `firestore:"capacity"`
 	CreatedAt      time.Time             `firestore:"createdAt"`
-	UpdatedAt      time.Time             `firestore:"updatedAt,omitempty"`
+	UpdatedAt      time.Time             `firestore:"updatedAt"`
 }
 
 func FromDomain(domain rooms.Domain) *Model {

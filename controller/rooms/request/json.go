@@ -8,11 +8,11 @@ import (
 
 type Room struct {
 	RoomType       string                `json:"roomType" validate:"required" firestore:"roomType"`
-	Room           []rooms.RoomCondition `json:"room" validate:"required" firestore:"room"`
+	Room           []rooms.RoomCondition `json:"room" validate:"required,dive,required" firestore:"room"`
 	Description    string                `json:"description" validate:"required" firestore:"description"`
-	ImageRoom_URLS []string              `json:"imageRoom_URLS" validate:"required,url" firestore:"imageRoom_URLS"`
-	Rules          []string              `json:"rules" validate:"required" firestore:"rules"`
-	Facilities     []string              `json:"facilities" validate:"required" firestore:"facilities"`
+	ImageRoom_URLS []string              `json:"imageRoom_URLS" validate:"required,dive,required,url" firestore:"imageRoom_URLS"`
+	Rules          []string              `json:"rules" validate:"required,dive,required" firestore:"rules"`
+	Facilities     []string              `json:"facilities" validate:"required,dive,required" firestore:"facilities"`
 	Capacity       int                   `json:"capacity" validate:"required" firestore:"capacity"`
 }
 

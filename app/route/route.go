@@ -38,21 +38,18 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user.POST("/register", cl.UserController.UserRegister)
 	user.POST("/login", cl.UserController.Login)
 	user.GET("/profile", cl.UserController.GetUserProfile, userReceptionistMiddleware.CheckToken)
-	user.POST("/profile", cl.UserController.UpdateUserProfile, userReceptionistMiddleware.CheckToken)
+	user.PUT("/profile", cl.UserController.UpdateUserProfile, userReceptionistMiddleware.CheckToken)
 
 	room := e.Group("/api/v1/room")
-	room.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"message": "Hello Room!",
-		})
-	})
-	room.GET("/all", cl.RoomController.GetAllRoom)
+	room.GET("/", cl.RoomController.GetAllRoom)
+	room.POST("/create", cl.RoomController.CreateRoom, adminMiddleware.CheckToken)
 
 	// receptionist := e.Group("/api/v1/receptionist", receptionistMiddleware.CheckToken)
 
 	admin := e.Group("/api/v1/admin", adminMiddleware.CheckToken)
 	admin.GET("/user-list", cl.UserController.GetUserList)
-	admin.POST("/register", cl.UserController.SudoRegister)
-	admin.GET("/profile/:user-email", cl.UserController.SudoGetUserProfile)
-	admin.POST("/profile/:user-email", cl.UserController.UpdateUserStatus)
+	admin.POST("/register", cl.UserController.AdminRegister)
+	admin.GET("/profile/:user-email", cl.UserController.AdminGetUserProfile)
+	admin.PUT("/profile/:user-email", cl.UserController.AdminUpdateUser)
+	admin.DELETE("/profile/:user-email", cl.UserController.AdminDeleteUser)
 }

@@ -51,7 +51,7 @@ func (userCtrl *UserController) UserRegister(c echo.Context) error {
 	})
 }
 
-func (userCtrl *UserController) SudoRegister(c echo.Context) error {
+func (userCtrl *UserController) AdminRegister(c echo.Context) error {
 	userInput := request.User{}
 
 	if c.Bind(&userInput) != nil {
@@ -145,7 +145,7 @@ func (userCtrl *UserController) GetUserProfile(c echo.Context) error {
 	})
 }
 
-func (userCtrl *UserController) SudoGetUserProfile(c echo.Context) error {
+func (userCtrl *UserController) AdminGetUserProfile(c echo.Context) error {
 	userEmail := c.Param("user-email")
 
 	user, err := userCtrl.userUseCase.GetUserByEmail(userEmail)
@@ -161,10 +161,23 @@ func (userCtrl *UserController) SudoGetUserProfile(c echo.Context) error {
 	})
 }
 
-func (userCtrl *UserController) UpdateUserStatus(c echo.Context) error {
+func (userCtrl *UserController) AdminUpdateUser(c echo.Context) error {
 	userEmail := c.Param("user-email")
 
-	user, err := userCtrl.userUseCase.UpdateUserStatus(userEmail)
+	userInput := request.AdminUpdate{}
+	if c.Bind(&userInput) != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	if userInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "required filled form is invalid",
+		})
+	}
+
+	user, err := userCtrl.userUseCase.AdminUpdateUser(userEmail, userInput.ToDomain())
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"message": err.Error(),
@@ -210,5 +223,20 @@ func (userCtrl *UserController) UpdateUserProfile(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "success to update user profile",
 		"user":    response.FromDomain(user),
+	})
+}
+
+func (userCtrl *UserController) AdminDeleteUser(c echo.Context) error {
+	userEmail := c.Param("user-email")
+
+	err := userCtrl.userUseCase.AdminDeleteUser(userEmail)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "success to delete user",
 	})
 }
