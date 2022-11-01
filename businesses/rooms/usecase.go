@@ -31,3 +31,12 @@ func (ru *RoomUseCase) UpdateRoom(roomDomain *Domain) (Domain, error) {
 
 	return roomData, nil
 }
+
+func (ru *RoomUseCase) DeleteRoom(roomType string) error {
+	err := ru.roomRepository.DeleteRoom(roomType)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

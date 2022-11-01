@@ -107,3 +107,12 @@ func (rr *RoomRepository) UpdateRoom(roomDomain *rooms.Domain) (rooms.Domain, er
 
 	return roomData.ToDomain(), nil
 }
+
+func (rr *RoomRepository) DeleteRoom(roomType string) error {
+	_, err := rr.roomsCollection().Doc(roomType).Delete(rr.ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
