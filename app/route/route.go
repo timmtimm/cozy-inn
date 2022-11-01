@@ -41,12 +41,8 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user.POST("/profile", cl.UserController.UpdateUserProfile, userReceptionistMiddleware.CheckToken)
 
 	room := e.Group("/api/v1/room")
-	room.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"message": "Hello Room!",
-		})
-	})
-	room.GET("/all", cl.RoomController.GetAllRoom)
+	room.GET("/", cl.RoomController.GetAllRoom)
+	room.POST("/create", cl.RoomController.CreateRoom, adminMiddleware.CheckToken)
 
 	// receptionist := e.Group("/api/v1/receptionist", receptionistMiddleware.CheckToken)
 
