@@ -74,6 +74,22 @@ func (uu *UserUseCase) GetUserByEmail(email string) (Domain, error) {
 }
 
 func (uu *UserUseCase) AdminUpdateUser(email string, userDomain *Domain) (Domain, error) {
+	avaliableRoles := []string{"user", "receptionist"}
+	found := false
+	for _, avaliableRole := range avaliableRoles {
+		if userDomain.Role == avaliableRole {
+			found = true
+		}
+	}
+
+	if !found {
+		return Domain{}, errors.New("invalid role")
+	}
+
+	if userDomain.Role == "admin" {
+		return Domain{}, errors.New("can't change role to admin")
+	}
+
 	user, err := uu.userRepository.AdminUpdateUser(email, userDomain)
 	if err != nil {
 		return Domain{}, err
