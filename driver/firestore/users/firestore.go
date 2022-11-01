@@ -184,3 +184,12 @@ func (ur *UserRepository) GetUserList() ([]users.Domain, error) {
 
 	return userData, nil
 }
+
+func (ur *UserRepository) Delete(email string) error {
+	_, err := ur.usersCollection().Doc(email).Delete(ur.ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

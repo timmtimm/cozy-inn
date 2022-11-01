@@ -23,6 +23,7 @@ type UseCase interface {
 	UpdateUser(email string, userDomain *Domain) (Domain, error)
 	GetUserList() ([]Domain, error)
 	AdminUpdateUser(email string, userDomain *Domain) (Domain, error)
+	AdminDeleteUser(email string) error
 }
 
 type Repository interface {
@@ -32,4 +33,5 @@ type Repository interface {
 	Update(email string, userDomain *Domain) (Domain, error)
 	GetUserList() ([]Domain, error)
 	AdminUpdateUser(email string, userDomain *Domain) (Domain, error)
+	Delete(email string) error
 }

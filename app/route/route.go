@@ -48,7 +48,8 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 
 	admin := e.Group("/api/v1/admin", adminMiddleware.CheckToken)
 	admin.GET("/user-list", cl.UserController.GetUserList)
-	admin.POST("/register", cl.UserController.SudoRegister)
-	admin.GET("/profile/:user-email", cl.UserController.SudoGetUserProfile)
+	admin.POST("/register", cl.UserController.AdminRegister)
+	admin.GET("/profile/:user-email", cl.UserController.AdminGetUserProfile)
 	admin.PUT("/profile/:user-email", cl.UserController.AdminUpdateUser)
+	admin.DELETE("/profile/:user-email", cl.UserController.AdminDeleteUser)
 }

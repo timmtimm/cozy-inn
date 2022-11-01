@@ -115,3 +115,12 @@ func (uu *UserUseCase) GetUserList() ([]Domain, error) {
 
 	return users, nil
 }
+
+func (uu *UserUseCase) AdminDeleteUser(email string) error {
+	err := uu.userRepository.Delete(email)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
