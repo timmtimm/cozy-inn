@@ -94,6 +94,7 @@ func (rr *RoomRepository) UpdateRoom(roomDomain *rooms.Domain) (rooms.Domain, er
 	}
 
 	roomData.Capacity = roomDomain.Capacity
+	roomData.Room = roomDomain.Room
 	roomData.Description = roomDomain.Description
 	roomData.Facilities = roomDomain.Facilities
 	roomData.ImageRoom_URLS = roomDomain.ImageRoom_URLS
