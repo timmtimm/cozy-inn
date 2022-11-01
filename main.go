@@ -2,15 +2,19 @@ package main
 
 import (
 	"context"
-	_middleware "cozy-inn/app/middleware"
-	_route "cozy-inn/app/route"
-	_userUseCase "cozy-inn/businesses/users"
-	_userController "cozy-inn/controller/users"
-	_driverFactory "cozy-inn/driver"
+	"cozy-inn/util"
 	"fmt"
 
+	_middleware "cozy-inn/app/middleware"
+	_route "cozy-inn/app/route"
+	_driverFactory "cozy-inn/driver"
 	firestore "cozy-inn/driver/firestore"
-	util "cozy-inn/util"
+
+	_userUseCase "cozy-inn/businesses/users"
+	_userController "cozy-inn/controller/users"
+
+	_roomUseCase "cozy-inn/businesses/rooms"
+	_roomController "cozy-inn/controller/rooms"
 
 	firebase "firebase.google.com/go"
 	echo "github.com/labstack/echo/v4"
@@ -39,13 +43,18 @@ func main() {
 	userUsecase := _userUseCase.NewUserUsecase(userRepository, &configJWT)
 	userController := _userController.NewUserController(userUsecase)
 
+	RoomRepository := _driverFactory.NewRoomRepository(firestore, ctx)
+	RoomUsecase := _roomUseCase.NewRoomUsecase(RoomRepository)
+	RoomController := _roomController.NewRoomController(RoomUsecase)
+
 	routeController := _route.ControllerList{
 		LoggerMiddleware: configLogger.Init(),
 		JWTMiddleware:    configJWT.Init(),
 		UserController:   userController,
+		RoomController:   RoomController,
 	}
 
-	routeController.InitRoute(e)
+	routeController.Init(e)
 
 	appPort := fmt.Sprintf(":%s", util.GetConfig("APP_PORT"))
 

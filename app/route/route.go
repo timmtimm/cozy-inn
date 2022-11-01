@@ -2,6 +2,7 @@ package route
 
 import (
 	_middleware "cozy-inn/app/middleware"
+	"cozy-inn/controller/rooms"
 	"cozy-inn/controller/users"
 	"net/http"
 
@@ -13,9 +14,10 @@ type ControllerList struct {
 	LoggerMiddleware echo.MiddlewareFunc
 	JWTMiddleware    middleware.JWTConfig
 	UserController   *users.UserController
+	RoomController   *rooms.RoomController
 }
 
-func (cl *ControllerList) InitRoute(e *echo.Echo) {
+func (cl *ControllerList) Init(e *echo.Echo) {
 	e.Use(cl.LoggerMiddleware)
 
 	userMiddleware := _middleware.RoleMiddleware{Role: []string{"user"}}
@@ -40,6 +42,7 @@ func (cl *ControllerList) InitRoute(e *echo.Echo) {
 			"message": "Hello Room!",
 		})
 	})
+	room.GET("/all", cl.RoomController.GetAllRoom)
 
 	resepsionist := e.Group("/api/v1/resepsionist", resepsionistMiddleware.CheckToken)
 	resepsionist.GET("/profile", cl.UserController.GetUserProfile)
