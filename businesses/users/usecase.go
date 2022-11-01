@@ -2,6 +2,7 @@ package users
 
 import (
 	"cozy-inn/app/middleware"
+	"errors"
 )
 
 type UserUseCase struct {
@@ -24,7 +25,28 @@ func (uu *UserUseCase) Register(userDomain *Domain) (string, error) {
 	}
 
 	token := uu.jwtAuth.GenerateToken(userDomain.Email, userDomain.Role)
+	return token, nil
+}
 
+func (uu *UserUseCase) SudoRegister(userDomain *Domain) (string, error) {
+	avaliableRoles := []string{"user", "receptionist"}
+	found := false
+	for _, avaliableRole := range avaliableRoles {
+		if userDomain.Role == avaliableRole {
+			found = true
+		}
+	}
+
+	if !found {
+		return "", errors.New("invalid role")
+	}
+
+	err := uu.userRepository.Register(userDomain)
+	if err != nil {
+		return "", err
+	}
+
+	token := uu.jwtAuth.GenerateToken(userDomain.Email, userDomain.Role)
 	return token, nil
 }
 
