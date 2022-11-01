@@ -97,7 +97,7 @@ func (roomCtrl *RoomController) DeleteRoom(c echo.Context) error {
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"message": "failed to delete room",
+			"message": err.Error(),
 		})
 	}
 

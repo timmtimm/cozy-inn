@@ -109,7 +109,14 @@ func (rr *RoomRepository) UpdateRoom(roomDomain *rooms.Domain) (rooms.Domain, er
 }
 
 func (rr *RoomRepository) DeleteRoom(roomType string) error {
-	_, err := rr.roomsCollection().Doc(roomType).Delete(rr.ctx)
+	_, err := rr.roomsCollection().Doc(roomType).Get(rr.ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return errors.New("room type not registered")
+		}
+	}
+
+	_, err = rr.roomsCollection().Doc(roomType).Delete(rr.ctx)
 	if err != nil {
 		return err
 	}
