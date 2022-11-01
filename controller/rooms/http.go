@@ -60,3 +60,48 @@ func (roomCtrl *RoomController) CreateRoom(c echo.Context) error {
 		"message": "success create room",
 	})
 }
+
+func (roomCtrl *RoomController) UpdateRoom(c echo.Context) error {
+	RoomInput := request.Room{}
+
+	if err := c.Bind(&RoomInput); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	if RoomInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "validation failed",
+		})
+	}
+
+	roomData, err := roomCtrl.roomUseCase.UpdateRoom(RoomInput.ToDomain())
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": "failed to update room",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success update room",
+		"data":    roomData,
+	})
+}
+
+func (roomCtrl *RoomController) DeleteRoom(c echo.Context) error {
+	roomType := c.Param("room-type")
+
+	err := roomCtrl.roomUseCase.DeleteRoom(roomType)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success delete room",
+	})
+}
