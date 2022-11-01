@@ -48,7 +48,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	})
 	room.GET("/all", cl.RoomController.GetAllRoom)
 
-	// resepsionist := e.Group("/api/v1/resepsionist", resepsionistMiddleware.CheckToken)
+	// receptionist := e.Group("/api/v1/receptionist", receptionistMiddleware.CheckToken)
 
 	admin := e.Group("/api/v1/admin", adminMiddleware.CheckToken)
 	admin.GET("/user-list", cl.UserController.GetUserList)

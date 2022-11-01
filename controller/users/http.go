@@ -53,10 +53,24 @@ func (userCtrl *UserController) UserRegister(c echo.Context) error {
 
 func (userCtrl *UserController) SudoRegister(c echo.Context) error {
 	userInput := request.User{}
+	avaliableRoles := []string{"admin", "user", "receptionist"}
 
 	if c.Bind(&userInput) != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"message": "invalid request",
+		})
+	}
+
+	found := false
+	for _, avaliableRole := range avaliableRoles {
+		if userInput.Role == avaliableRole {
+			found = true
+		}
+	}
+
+	if !found {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid role",
 		})
 	}
 
