@@ -89,3 +89,19 @@ func (roomCtrl *RoomController) UpdateRoom(c echo.Context) error {
 		"data":    roomData,
 	})
 }
+
+func (roomCtrl *RoomController) DeleteRoom(c echo.Context) error {
+	roomType := c.Param("room-type")
+
+	err := roomCtrl.roomUseCase.DeleteRoom(roomType)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success delete room",
+	})
+}
