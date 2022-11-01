@@ -10,7 +10,7 @@ type User struct {
 	Name        string    `json:"name" firestore:"name"`
 	Email       string    `json:"email" firestore:"email"`
 	ImageID_URL string    `json:"imageID_URL" firestore:"imageID_URL"`
-	Status      string    `json:"status" firestore:"status"`
+	Status      bool      `json:"status" firestore:"status"`
 	CreatedAt   time.Time `json:"createdAt" firestore:"createdAt,serverTimestamp"`
 	UpdatedAt   time.Time `json:"updatedAt" firestore:"updatedAt,omitempty"`
 }

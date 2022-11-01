@@ -11,7 +11,7 @@ type Model struct {
 	Email       string    `firestore:"email"`
 	Password    string    `firestore:"password"`
 	ImageID_URL string    `firestore:"imageID_URL"`
-	Status      string    `firestore:"status"`
+	Status      bool      `firestore:"status"`
 	CreatedAt   time.Time `firestore:"createdAt"`
 	UpdatedAt   time.Time `firestore:"updatedAt,omitempty"`
 }
