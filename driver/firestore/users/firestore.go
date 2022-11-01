@@ -96,7 +96,7 @@ func (ur *UserRepository) Login(userDomain *users.Domain) error {
 		return errors.New("failed get data")
 	}
 
-	if userData.Status == "inactive" {
+	if !userData.Status {
 		return errors.New("user is inactive")
 	}
 
@@ -134,7 +134,7 @@ func (ur *UserRepository) Update(email string, userDomain *users.Domain) (users.
 	return userData.ToDomain(), nil
 }
 
-func (ur *UserRepository) SudoUpdate(email string, userDomain *users.Domain) (users.Domain, error) {
+func (ur *UserRepository) UpdateUserStatus(email string) (users.Domain, error) {
 	doc, err := ur.usersCollection().Doc(email).Get(ur.ctx)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
@@ -147,11 +147,7 @@ func (ur *UserRepository) SudoUpdate(email string, userDomain *users.Domain) (us
 		return users.Domain{}, err
 	}
 
-	rec := FromDomain(userDomain)
-	userData.Name = rec.Name
-	userData.Role = rec.Role
-	userData.Status = rec.Status
-	userData.ImageID_URL = rec.ImageID_URL
+	userData.Status = !userData.Status
 	userData.UpdatedAt = time.Now()
 
 	_, err = ur.usersCollection().Doc(email).Set(ur.ctx, userData)

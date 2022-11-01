@@ -10,7 +10,7 @@ type Domain struct {
 	Email       string
 	Password    string `json:"-"`
 	ImageID_URL string
-	Status      string
+	Status      bool
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
@@ -21,7 +21,7 @@ type UseCase interface {
 	GetUserByEmail(email string) (Domain, error)
 	UpdateUser(email string, userDomain *Domain) (Domain, error)
 	GetUserList() ([]Domain, error)
-	SudoUpdateUser(email string, userDomain *Domain) (Domain, error)
+	UpdateUserStatus(email string) (Domain, error)
 }
 
 type Repository interface {
@@ -30,5 +30,5 @@ type Repository interface {
 	Login(userDomain *Domain) error
 	Update(email string, userDomain *Domain) (Domain, error)
 	GetUserList() ([]Domain, error)
-	SudoUpdate(email string, userDomain *Domain) (Domain, error)
+	UpdateUserStatus(email string) (Domain, error)
 }

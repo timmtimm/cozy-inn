@@ -30,7 +30,7 @@ func (userCtrl *UserController) UserRegister(c echo.Context) error {
 	}
 
 	userInput.Role = "user"
-	userInput.Status = "active"
+	userInput.Status = true
 	if userInput.Validate() != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"message": "validation failed",
@@ -66,7 +66,7 @@ func (userCtrl *UserController) SudoRegister(c echo.Context) error {
 		})
 	}
 
-	userInput.Status = "active"
+	userInput.Status = true
 	if userInput.Validate() != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"message": "validation failed",
@@ -167,24 +167,10 @@ func (userCtrl *UserController) SudoGetUserProfile(c echo.Context) error {
 	})
 }
 
-func (userCtrl *UserController) SudoUpdateUserProfile(c echo.Context) error {
+func (userCtrl *UserController) UpdateUserStatus(c echo.Context) error {
 	userEmail := c.Param("user-email")
 
-	userInput := request.SudoUpdate{}
-
-	if c.Bind(&userInput) != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "invalid request",
-		})
-	}
-
-	if userInput.Validate() != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "validation failed",
-		})
-	}
-
-	user, err := userCtrl.userUseCase.SudoUpdateUser(userEmail, userInput.ToDomain())
+	user, err := userCtrl.userUseCase.UpdateUserStatus(userEmail)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"message": err.Error(),

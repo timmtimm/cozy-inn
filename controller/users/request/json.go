@@ -12,7 +12,7 @@ type User struct {
 	Password    string `json:"password" validate:"required" firestore:"password"`
 	ImageID_URL string `json:"imageID_URL" validate:"required,url" firestore:"imageID_URL"`
 	Role        string `json:"role" validate:"required" firestore:"role"`
-	Status      string `json:"status" validate:"required" firestore:"status"`
+	Status      bool   `json:"status" validate:"required" firestore:"status"`
 }
 
 func (req *User) ToDomain() *users.Domain {
@@ -63,30 +63,6 @@ func (req *UserUpdate) ToDomain() *users.Domain {
 }
 
 func (req *UserUpdate) Validate() error {
-	validate := validator.New()
-	err := validate.Struct(req)
-	return err
-}
-
-type SudoUpdate struct {
-	Name        string `json:"name" validate:"required" firestore:"name"`
-	Email       string `json:"email" validate:"required,email" firestore:"email"`
-	ImageID_URL string `json:"imageID_URL" validate:"required,url" firestore:"imageID_URL"`
-	Role        string `json:"role" validate:"required" firestore:"role"`
-	Status      string `json:"status" validate:"required" firestore:"status"`
-}
-
-func (req *SudoUpdate) ToDomain() *users.Domain {
-	return &users.Domain{
-		Name:        req.Name,
-		Email:       req.Email,
-		ImageID_URL: req.ImageID_URL,
-		Role:        req.Role,
-		Status:      req.Status,
-	}
-}
-
-func (req *SudoUpdate) Validate() error {
 	validate := validator.New()
 	err := validate.Struct(req)
 	return err

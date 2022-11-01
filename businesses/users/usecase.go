@@ -51,8 +51,8 @@ func (uu *UserUseCase) GetUserByEmail(email string) (Domain, error) {
 	return user, nil
 }
 
-func (uu *UserUseCase) SudoUpdateUser(email string, userDomain *Domain) (Domain, error) {
-	user, err := uu.userRepository.SudoUpdate(email, userDomain)
+func (uu *UserUseCase) UpdateUserStatus(email string) (Domain, error) {
+	user, err := uu.userRepository.UpdateUserStatus(email)
 	if err != nil {
 		return Domain{}, err
 	}
