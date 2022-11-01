@@ -22,3 +22,12 @@ func (ru *RoomUseCase) CreateRoom(roomDomain *Domain) error {
 
 	return nil
 }
+
+func (ru *RoomUseCase) UpdateRoom(roomDomain *Domain) (Domain, error) {
+	roomData, err := ru.roomRepository.UpdateRoom(roomDomain)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	return roomData, nil
+}

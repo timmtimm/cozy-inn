@@ -43,6 +43,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	room := e.Group("/api/v1/room")
 	room.GET("/", cl.RoomController.GetAllRoom)
 	room.POST("/create", cl.RoomController.CreateRoom, adminMiddleware.CheckToken)
+	room.POST("/update/:room-type", cl.RoomController.UpdateRoom, adminMiddleware.CheckToken)
 
 	// receptionist := e.Group("/api/v1/receptionist", receptionistMiddleware.CheckToken)
 

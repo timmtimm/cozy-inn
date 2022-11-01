@@ -79,3 +79,31 @@ func (rr *RoomRepository) CreateRoom(roomDomain *rooms.Domain) error {
 
 	return errors.New("failed to register")
 }
+
+func (rr *RoomRepository) UpdateRoom(roomDomain *rooms.Domain) (rooms.Domain, error) {
+	doc, err := rr.roomsCollection().Doc(roomDomain.RoomType).Get(rr.ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return rooms.Domain{}, errors.New("room type not registered")
+		}
+	}
+
+	roomData := Model{}
+	if err := doc.DataTo(&roomData); err != nil {
+		return rooms.Domain{}, err
+	}
+
+	roomData.Capacity = roomDomain.Capacity
+	roomData.Description = roomDomain.Description
+	roomData.Facilities = roomDomain.Facilities
+	roomData.ImageRoom_URLS = roomDomain.ImageRoom_URLS
+	roomData.Rules = roomDomain.Rules
+	roomData.UpdatedAt = time.Now()
+
+	_, err = rr.roomsCollection().Doc(roomDomain.RoomType).Set(rr.ctx, roomData)
+	if err != nil {
+		return rooms.Domain{}, errors.New("failed to update")
+	}
+
+	return roomData.ToDomain(), nil
+}

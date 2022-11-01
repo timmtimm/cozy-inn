@@ -24,9 +24,11 @@ type RoomCondition struct {
 type UseCase interface {
 	GetAllRoom() ([]Domain, error)
 	CreateRoom(roomDomain *Domain) error
+	UpdateRoom(roomDomain *Domain) (Domain, error)
 }
 
 type Repository interface {
 	GetAllRoom() ([]Domain, error)
 	CreateRoom(roomDomain *Domain) error
+	UpdateRoom(roomDomain *Domain) (Domain, error)
 }
