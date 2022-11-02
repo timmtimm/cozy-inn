@@ -3,6 +3,7 @@ package route
 import (
 	_middleware "cozy-inn/app/middleware"
 	"cozy-inn/controller/rooms"
+	"cozy-inn/controller/transactions"
 	"cozy-inn/controller/users"
 	"net/http"
 
@@ -11,17 +12,18 @@ import (
 )
 
 type ControllerList struct {
-	LoggerMiddleware echo.MiddlewareFunc
-	JWTMiddleware    middleware.JWTConfig
-	UserController   *users.UserController
-	RoomController   *rooms.RoomController
+	LoggerMiddleware      echo.MiddlewareFunc
+	JWTMiddleware         middleware.JWTConfig
+	UserController        *users.UserController
+	RoomController        *rooms.RoomController
+	TransactionController *transactions.TransactionController
 }
 
 func (cl *ControllerList) Init(e *echo.Echo) {
 	e.Use(cl.LoggerMiddleware)
 
 	// single role
-	// userMiddleware := _middleware.RoleMiddleware{Role: []string{"user"}}
+	userMiddleware := _middleware.RoleMiddleware{Role: []string{"user"}}
 	adminMiddleware := _middleware.RoleMiddleware{Role: []string{"admin"}}
 	// receptionistMiddleware := _middleware.RoleMiddleware{Role: []string{"receptionist"}}
 
@@ -46,7 +48,8 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	room.PUT("/:room-type", cl.RoomController.UpdateRoom, adminMiddleware.CheckToken)
 	room.DELETE("/:room-type", cl.RoomController.DeleteRoom, adminMiddleware.CheckToken)
 
-	// receptionist := e.Group("/api/v1/receptionist", receptionistMiddleware.CheckToken)
+	transaction := e.Group("/api/v1/transaction")
+	transaction.GET("/", cl.TransactionController.GetAllTransaction, userMiddleware.CheckToken)
 
 	admin := e.Group("/api/v1/admin", adminMiddleware.CheckToken)
 	admin.GET("/user-list", cl.UserController.GetUserList)
