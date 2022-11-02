@@ -16,6 +16,9 @@ import (
 	_roomUseCase "cozy-inn/businesses/rooms"
 	_roomController "cozy-inn/controller/rooms"
 
+	_transactionUseCase "cozy-inn/businesses/transactions"
+	_transactionController "cozy-inn/controller/transactions"
+
 	firebase "firebase.google.com/go"
 	echo "github.com/labstack/echo/v4"
 )
@@ -47,11 +50,16 @@ func main() {
 	RoomUsecase := _roomUseCase.NewRoomUsecase(RoomRepository)
 	RoomController := _roomController.NewRoomController(RoomUsecase)
 
+	TransactionRepository := _driverFactory.NewTransactionRepository(firestore, ctx)
+	TransactionUsecase := _transactionUseCase.NewTransactionUsecase(TransactionRepository)
+	TransactionController := _transactionController.NewTransactionController(TransactionUsecase)
+
 	routeController := _route.ControllerList{
-		LoggerMiddleware: configLogger.Init(),
-		JWTMiddleware:    configJWT.Init(),
-		UserController:   userController,
-		RoomController:   RoomController,
+		LoggerMiddleware:      configLogger.Init(),
+		JWTMiddleware:         configJWT.Init(),
+		UserController:        userController,
+		RoomController:        RoomController,
+		TransactionController: TransactionController,
 	}
 
 	routeController.Init(e)
