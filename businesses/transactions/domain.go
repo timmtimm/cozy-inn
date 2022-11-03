@@ -29,5 +29,5 @@ type UseCase interface {
 type Repository interface {
 	GetAllTransaction(email string) ([]Domain, error)
 	CreateTransaction(email string, transactionDomain *Domain, RoomData rooms.Domain) (Domain, error)
-	GetFinishedTransactionByRoom(roomType string, startDate time.Time) ([]Domain, error)
+	GetFinishedTransactionByRoom(roomType string, startDate time.Time, roomNumber int) ([]Domain, error)
 }

@@ -3,6 +3,7 @@ package transactions
 import (
 	"cozy-inn/businesses/rooms"
 	"errors"
+	"fmt"
 )
 
 type TransactionUseCase struct {
@@ -35,24 +36,28 @@ func (tu *TransactionUseCase) CreateTransaction(email string, transactionDomain 
 
 	for _, room := range RoomData.Room {
 		if room.Number == transactionDomain.RoomNumber && room.Status != "available" {
-			return Domain{}, errors.New("room is not available")
+			return Domain{}, errors.New("room is not available1")
 		}
 	}
 
-	transactionList, err := tu.transactionRepository.GetFinishedTransactionByRoom(transactionDomain.RoomType, transactionDomain.StartDate)
+	transactionList, err := tu.transactionRepository.GetFinishedTransactionByRoom(
+		transactionDomain.RoomType,
+		transactionDomain.StartDate,
+		transactionDomain.RoomNumber)
 	if err != nil {
 		return Domain{}, err
 	}
 
 	for _, transaction := range transactionList {
 		// start date between input end date and input start date
+		fmt.Println(transaction)
 		if transaction.StartDate.Before(transactionDomain.EndDate) && transaction.StartDate.After(transactionDomain.StartDate) {
-			return Domain{}, errors.New("room is not available")
+			return Domain{}, errors.New("room is not available2")
 		}
 
 		// end date between input end date and input start date
 		if transaction.EndDate.Before(transactionDomain.EndDate) && transaction.EndDate.After(transactionDomain.StartDate) {
-			return Domain{}, errors.New("room is not available")
+			return Domain{}, errors.New("room is not available3")
 		}
 	}
 

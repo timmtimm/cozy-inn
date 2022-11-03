@@ -4,6 +4,7 @@ import (
 	"context"
 	"cozy-inn/businesses/rooms"
 	"cozy-inn/businesses/transactions"
+	"errors"
 	"fmt"
 	"time"
 
@@ -50,9 +51,9 @@ func (tr *TransactionRepository) GetAllTransaction(email string) ([]transactions
 	return transactionList, nil
 }
 
-func (tr *TransactionRepository) GetFinishedTransactionByRoom(roomType string, startDate time.Time) ([]transactions.Domain, error) {
+func (tr *TransactionRepository) GetFinishedTransactionByRoom(roomType string, startDate time.Time, roomNumber int) ([]transactions.Domain, error) {
 	transactionList := []transactions.Domain{}
-	transactionDoc := tr.transactionsCollection().Where("roomType", "==", roomType).Where("endDate", "<=", startDate).Where("status", "==", "finished")
+	transactionDoc := tr.transactionsCollection().Where("roomType", "==", roomType).Where("roomNumber", "==", roomNumber).Where("endDate", ">=", startDate).Where("status", "in", []string{"paid", "unpaid"})
 
 	iter := transactionDoc.Documents(tr.ctx)
 	for {
@@ -81,6 +82,10 @@ func (tr *TransactionRepository) CreateTransaction(email string, transactionDoma
 	rec.UserEmail = email
 	rec.CreatedAt = time.Now()
 	rec.UpdatedAt = rec.CreatedAt
+
+	rec.StartDate = time.Date(rec.StartDate.Year(), rec.StartDate.Month(), rec.StartDate.Day(), 0, 0, 0, 0, time.UTC)
+	rec.EndDate = time.Date(rec.EndDate.Year(), rec.EndDate.Month(), rec.EndDate.Day(), 0, 0, 0, 0, time.UTC)
+
 	rec.Bill = RoomData.Price * int(rec.EndDate.Sub(rec.StartDate).Hours()/24)
 	rec.Status = "unpaid"
 
@@ -100,7 +105,7 @@ func (tr *TransactionRepository) CreateTransaction(email string, transactionDoma
 		UpdatedAt:     rec.UpdatedAt,
 	})
 	if err != nil {
-		return transactions.Domain{}, err
+		return transactions.Domain{}, errors.New("i miss her")
 	}
 
 	return rec.ToDomain(), nil
