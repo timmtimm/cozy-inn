@@ -23,6 +23,6 @@ func NewRoomRepository(fs *firestore.Client, ctx context.Context) roomDomain.Rep
 	return roomDB.NewRoomRepository(fs, ctx)
 }
 
-func NewTransactionRepository(fs *firestore.Client, ctx context.Context) transactionDomain.Repository {
-	return transactionDB.NewTransactionRepository(fs, ctx)
+func NewTransactionRepository(fs *firestore.Client, ctx context.Context, RoomRepository roomDomain.Repository) transactionDomain.Repository {
+	return transactionDB.NewTransactionRepository(fs, ctx, RoomRepository)
 }

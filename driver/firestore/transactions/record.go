@@ -7,27 +7,31 @@ import (
 
 type Model struct {
 	TransactionID string    `firestore:"transactionID"`
-	Room          string    `firestore:"room"`
+	UserEmail     string    `firestore:"userEmail"`
+	RoomType      string    `firestore:"roomType"`
+	RoomNumber    int       `firestore:"roomNumber"`
 	StartDate     time.Time `firestore:"startDate"`
 	EndDate       time.Time `firestore:"endDate"`
-	CheckIn       time.Time `firestore:"checkIn"`
-	CheckOut      time.Time `firestore:"checkOut"`
+	CheckIn       time.Time `firestore:"checkIn,omitempty"`
+	CheckOut      time.Time `firestore:"checkOut,omitempty"`
 	Status        string    `firestore:"status"`
-	Price         int       `firestore:"price"`
+	Bill          int       `firestore:"bill"`
+	PaymentProof  string    `firestore:"paymentProof,omitempty"`
 	CreatedAt     time.Time `firestore:"createdAt"`
 	UpdatedAt     time.Time `firestore:"updatedAt"`
 }
 
-func FromDomain(domain transactions.Domain) *Model {
+func FromDomain(domain *transactions.Domain) *Model {
 	return &Model{
 		TransactionID: domain.TransactionID,
-		Room:          domain.Room,
+		RoomType:      domain.RoomType,
+		RoomNumber:    domain.RoomNumber,
 		StartDate:     domain.StartDate,
 		EndDate:       domain.EndDate,
 		CheckIn:       domain.CheckIn,
 		CheckOut:      domain.CheckOut,
 		Status:        domain.Status,
-		Price:         domain.Price,
+		Bill:          domain.Bill,
 		CreatedAt:     domain.CreatedAt,
 		UpdatedAt:     domain.UpdatedAt,
 	}
@@ -36,13 +40,15 @@ func FromDomain(domain transactions.Domain) *Model {
 func (rec *Model) ToDomain() transactions.Domain {
 	return transactions.Domain{
 		TransactionID: rec.TransactionID,
-		Room:          rec.Room,
+		UserEmail:     rec.UserEmail,
+		RoomType:      rec.RoomType,
+		RoomNumber:    rec.RoomNumber,
 		StartDate:     rec.StartDate,
 		EndDate:       rec.EndDate,
 		CheckIn:       rec.CheckIn,
 		CheckOut:      rec.CheckOut,
 		Status:        rec.Status,
-		Price:         rec.Price,
+		Bill:          rec.Bill,
 		CreatedAt:     rec.CreatedAt,
 		UpdatedAt:     rec.UpdatedAt,
 	}

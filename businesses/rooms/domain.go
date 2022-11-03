@@ -12,6 +12,7 @@ type Domain struct {
 	Rules          []string
 	Facilities     []string
 	Capacity       int
+	Price          int
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 }
@@ -33,4 +34,5 @@ type Repository interface {
 	CreateRoom(roomDomain *Domain) error
 	UpdateRoom(roomDomain *Domain) (Domain, error)
 	DeleteRoom(roomType string) error
+	GetRoomByType(roomType string) (Domain, error)
 }

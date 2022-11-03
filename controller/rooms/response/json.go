@@ -13,8 +13,9 @@ type Room struct {
 	Rules          []string              `json:"rules" firestore:"rules"`
 	Facilities     []string              `json:"facilities" firestore:"facilities"`
 	Capacity       int                   `json:"capacity" firestore:"capacity"`
-	CreatedAt      time.Time             `json:"createdAt" firestore:"createdAt,serverTimestamp"`
-	UpdatedAt      time.Time             `json:"updatedAt" firestore:"updatedAt,omitempty"`
+	Price          int                   `json:"price" firestore:"price"`
+	CreatedAt      time.Time             `json:"createdAt" firestore:"createdAt"`
+	UpdatedAt      time.Time             `json:"updatedAt" firestore:"updatedAt"`
 }
 
 func FromDomain(domain rooms.Domain) Room {
