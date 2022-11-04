@@ -49,7 +49,7 @@ func (rr *RoomRepository) GetAllRoom() ([]rooms.Domain, error) {
 }
 
 func (rr *RoomRepository) CreateRoom(roomDomain *rooms.Domain) error {
-	rec := FromDomain(*roomDomain)
+	rec := FromDomain(roomDomain)
 
 	doc, err := rr.roomsCollection().Doc(rec.RoomType).Get(rr.ctx)
 	if err != nil {
@@ -123,4 +123,20 @@ func (rr *RoomRepository) DeleteRoom(roomType string) error {
 	}
 
 	return nil
+}
+
+func (rr *RoomRepository) GetRoomByType(roomType string) (rooms.Domain, error) {
+	doc, err := rr.roomsCollection().Doc(roomType).Get(rr.ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return rooms.Domain{}, errors.New("room type not registered")
+		}
+	}
+
+	roomData := Model{}
+	if err := doc.DataTo(&roomData); err != nil {
+		return rooms.Domain{}, err
+	}
+
+	return roomData.ToDomain(), nil
 }

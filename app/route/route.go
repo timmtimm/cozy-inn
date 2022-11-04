@@ -28,7 +28,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	// receptionistMiddleware := _middleware.RoleMiddleware{Role: []string{"receptionist"}}
 
 	// multiple role
-	userReceptionistMiddleware := _middleware.RoleMiddleware{Role: []string{"user", "receptionist"}}
+	AllMiddleware := _middleware.RoleMiddleware{Role: []string{"user", "receptionist", "admin"}}
 
 	e.GET("/api/v1/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
@@ -39,8 +39,8 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user := e.Group("/api/v1/user")
 	user.POST("/register", cl.UserController.UserRegister)
 	user.POST("/login", cl.UserController.Login)
-	user.GET("/profile", cl.UserController.GetUserProfile, userReceptionistMiddleware.CheckToken)
-	user.PUT("/profile", cl.UserController.UpdateUserProfile, userReceptionistMiddleware.CheckToken)
+	user.GET("/profile", cl.UserController.GetUserProfile, AllMiddleware.CheckToken)
+	user.PUT("/profile", cl.UserController.UpdateUserProfile, AllMiddleware.CheckToken)
 
 	room := e.Group("/api/v1/room")
 	room.GET("/", cl.RoomController.GetAllRoom)
@@ -50,6 +50,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 
 	transaction := e.Group("/api/v1/transaction")
 	transaction.GET("/", cl.TransactionController.GetAllTransaction, userMiddleware.CheckToken)
+	transaction.POST("/", cl.TransactionController.CreateTransaction, userMiddleware.CheckToken)
 
 	admin := e.Group("/api/v1/admin", adminMiddleware.CheckToken)
 	admin.GET("/user-list", cl.UserController.GetUserList)
