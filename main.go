@@ -50,8 +50,8 @@ func main() {
 	RoomUsecase := _roomUseCase.NewRoomUsecase(RoomRepository)
 	RoomController := _roomController.NewRoomController(RoomUsecase)
 
-	TransactionRepository := _driverFactory.NewTransactionRepository(firestore, ctx)
-	TransactionUsecase := _transactionUseCase.NewTransactionUsecase(TransactionRepository)
+	TransactionRepository := _driverFactory.NewTransactionRepository(firestore, ctx, RoomRepository)
+	TransactionUsecase := _transactionUseCase.NewTransactionUsecase(TransactionRepository, RoomRepository)
 	TransactionController := _transactionController.NewTransactionController(TransactionUsecase)
 
 	routeController := _route.ControllerList{

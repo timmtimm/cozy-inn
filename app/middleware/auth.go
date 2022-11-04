@@ -80,10 +80,6 @@ func (rm RoleMiddleware) CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 		for _, role := range rm.Role {
 			if claims.Role == role {
 				return next(c)
-			} else {
-				return c.JSON(http.StatusUnauthorized, map[string]string{
-					"message": "forbidden",
-				})
 			}
 		}
 

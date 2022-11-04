@@ -14,6 +14,7 @@ type Room struct {
 	Rules          []string              `json:"rules" validate:"required,dive,required" firestore:"rules"`
 	Facilities     []string              `json:"facilities" validate:"required,dive,required" firestore:"facilities"`
 	Capacity       int                   `json:"capacity" validate:"required" firestore:"capacity"`
+	Price          int                   `json:"price" validate:"required" firestore:"price"`
 }
 
 func (req *Room) ToDomain() *rooms.Domain {

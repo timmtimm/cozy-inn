@@ -13,11 +13,12 @@ type Model struct {
 	Rules          []string              `firestore:"rules"`
 	Facilities     []string              `firestore:"facilities"`
 	Capacity       int                   `firestore:"capacity"`
+	Price          int                   `firestore:"price"`
 	CreatedAt      time.Time             `firestore:"createdAt"`
 	UpdatedAt      time.Time             `firestore:"updatedAt"`
 }
 
-func FromDomain(domain rooms.Domain) *Model {
+func FromDomain(domain *rooms.Domain) *Model {
 	return &Model{
 		RoomType:       domain.RoomType,
 		Room:           domain.Room,
@@ -26,6 +27,7 @@ func FromDomain(domain rooms.Domain) *Model {
 		Rules:          domain.Rules,
 		Facilities:     domain.Facilities,
 		Capacity:       domain.Capacity,
+		Price:          domain.Price,
 		CreatedAt:      domain.CreatedAt,
 		UpdatedAt:      domain.UpdatedAt,
 	}
@@ -40,6 +42,7 @@ func (rec *Model) ToDomain() rooms.Domain {
 		Rules:          rec.Rules,
 		Facilities:     rec.Facilities,
 		Capacity:       rec.Capacity,
+		Price:          rec.Price,
 		CreatedAt:      rec.CreatedAt,
 		UpdatedAt:      rec.UpdatedAt,
 	}
