@@ -304,3 +304,17 @@ func (transactionCtrl *TransactionController) AdminDelete(c echo.Context) error 
 		"message": "success delete transaction",
 	})
 }
+
+func (transactionCtrl *TransactionController) AdminGetAllTransaction(c echo.Context) error {
+	transactions, err := transactionCtrl.transactionUseCase.AdminGetAllTransaction()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success get all transaction",
+		"data":    transactions,
+	})
+}

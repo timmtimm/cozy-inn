@@ -26,6 +26,7 @@ type UseCase interface {
 	GetAllReadyCheckIn() ([]Domain, error)
 	GetAllReadyCheckOut() ([]Domain, error)
 	GetAllPaymentNotVerified() ([]Domain, error)
+	AdminGetAllTransaction() ([]Domain, error)
 	GetTransactionOnVerification(transactionID string) (Domain, error)
 	GetCheckInTransaction(transactionID string) (Domain, error)
 	GetCheckOutTransaction(transactionID string) (Domain, error)
@@ -39,6 +40,7 @@ type UseCase interface {
 }
 
 type Repository interface {
+	GetAllTransaction() ([]Domain, error)
 	GetAllTransactionByEmail(email string) ([]Domain, error)
 	GetAllReadyCheckIn() ([]Domain, error)
 	GetAllReadyCheckOut() ([]Domain, error)

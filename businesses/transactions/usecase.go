@@ -55,6 +55,15 @@ func (tu *TransactionUseCase) GetAllPaymentNotVerified() ([]Domain, error) {
 	return transactions, nil
 }
 
+func (tu *TransactionUseCase) AdminGetAllTransaction() ([]Domain, error) {
+	transactions, err := tu.transactionRepository.GetAllTransaction()
+	if err != nil {
+		return []Domain{}, err
+	}
+
+	return transactions, nil
+}
+
 func (tu *TransactionUseCase) GetTransactionOnVerification(transactionID string) (Domain, error) {
 	transaction, err := tu.transactionRepository.GetTransactionByID(transactionID)
 	if err != nil {

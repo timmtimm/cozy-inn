@@ -28,6 +28,31 @@ func (tr *TransactionRepository) transactionsCollection() *firestore.CollectionR
 	return tr.client.Collection("transactions")
 }
 
+func (tr *TransactionRepository) GetAllTransaction() ([]transactions.Domain, error) {
+	transactionList := []transactions.Domain{}
+	transactionDoc := tr.transactionsCollection()
+
+	iter := transactionDoc.Documents(tr.ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transaction := transactions.Domain{}
+		if err := doc.DataTo(&transaction); err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transactionList = append(transactionList, transaction)
+	}
+
+	return transactionList, nil
+}
+
 func (tr *TransactionRepository) GetAllTransactionByEmail(email string) ([]transactions.Domain, error) {
 	transactionList := []transactions.Domain{}
 	transactionDoc := tr.transactionsCollection().Where("userEmail", "==", email)
@@ -43,7 +68,10 @@ func (tr *TransactionRepository) GetAllTransactionByEmail(email string) ([]trans
 		}
 
 		transaction := transactions.Domain{}
-		doc.DataTo(&transaction)
+		if err := doc.DataTo(&transaction); err != nil {
+			return []transactions.Domain{}, err
+		}
+
 		transactionList = append(transactionList, transaction)
 	}
 
