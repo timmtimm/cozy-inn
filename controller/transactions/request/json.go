@@ -21,8 +21,8 @@ type Transaction struct {
 	Payment_URL   string    `json:"payment_URL" firestore:"payment_URL,omitempty"`
 }
 
-func (req *Transaction) ToDomain() *transactions.Domain {
-	return &transactions.Domain{
+func (req *Transaction) ToDomain() transactions.Domain {
+	return transactions.Domain{
 		TransactionID: req.TransactionID,
 		UserEmail:     req.UserEmail,
 		RoomType:      req.RoomType,
@@ -46,8 +46,8 @@ type Payment struct {
 	Payment_URL string `json:"payment_URL" validate:"required,url" firestore:"payment_URL"`
 }
 
-func (req *Payment) ToDomain() *transactions.Domain {
-	return &transactions.Domain{
+func (req *Payment) ToDomain() transactions.Domain {
+	return transactions.Domain{
 		Payment_URL: req.Payment_URL,
 	}
 }
@@ -62,8 +62,8 @@ type Verification struct {
 	Status string `json:"status" validate:"required" firestore:"status"`
 }
 
-func (req *Verification) ToDomain() *transactions.Domain {
-	return &transactions.Domain{
+func (req *Verification) ToDomain() transactions.Domain {
+	return transactions.Domain{
 		Status: req.Status,
 	}
 }

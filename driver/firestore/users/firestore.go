@@ -45,15 +45,37 @@ func (ur *UserRepository) GetUserByEmail(email string) (users.Domain, error) {
 	return userData.ToDomain(), nil
 }
 
-func (ur *UserRepository) Register(userDomain *users.Domain) error {
-	password, _ := bcrypt.GenerateFromPassword([]byte(userDomain.Password), bcrypt.DefaultCost)
+func (ur *UserRepository) GetUserList() ([]users.Domain, error) {
+	iter := ur.usersCollection().Documents(ur.ctx)
+	userData := []users.Domain{}
 
-	rec := FromDomain(userDomain)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
 
+		user := Model{}
+		if err := doc.DataTo(&user); err != nil {
+			return nil, err
+		}
+
+		userData = append(userData, user.ToDomain())
+	}
+
+	return userData, nil
+}
+
+func (ur *UserRepository) Register(userInput users.Domain) error {
+	password, _ := bcrypt.GenerateFromPassword([]byte(userInput.Password), bcrypt.DefaultCost)
+
+	rec := FromDomain(userInput)
 	rec.Password = string(password)
 
 	doc, err := ur.usersCollection().Doc(rec.Email).Get(ur.ctx)
-
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
 			_, err = ur.usersCollection().Doc(rec.Email).Set(ur.ctx, Model{
@@ -81,8 +103,8 @@ func (ur *UserRepository) Register(userDomain *users.Domain) error {
 	return errors.New("failed to register")
 }
 
-func (ur *UserRepository) Login(userDomain *users.Domain) error {
-	rec := FromDomain(userDomain)
+func (ur *UserRepository) Login(userInput users.Domain) error {
+	rec := FromDomain(userInput)
 
 	doc, err := ur.usersCollection().Doc(rec.Email).Get(ur.ctx)
 	if err != nil {
@@ -108,81 +130,13 @@ func (ur *UserRepository) Login(userDomain *users.Domain) error {
 	return nil
 }
 
-func (ur *UserRepository) Update(email string, userDomain *users.Domain) (users.Domain, error) {
-	doc, err := ur.usersCollection().Doc(email).Get(ur.ctx)
+func (ur *UserRepository) Update(email string, userInput users.Domain) error {
+	_, err := ur.usersCollection().Doc(email).Set(ur.ctx, userInput)
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			return users.Domain{}, errors.New("email not registered")
-		}
+		return errors.New("failed to update")
 	}
 
-	userData := Model{}
-	if err := doc.DataTo(&userData); err != nil {
-		return users.Domain{}, err
-	}
-
-	rec := FromDomain(userDomain)
-	userData.Name = rec.Name
-	userData.ImageID_URL = rec.ImageID_URL
-	userData.UpdatedAt = time.Now()
-
-	_, err = ur.usersCollection().Doc(email).Set(ur.ctx, userData)
-	if err != nil {
-		return users.Domain{}, errors.New("failed to update")
-	}
-
-	return userData.ToDomain(), nil
-}
-
-func (ur *UserRepository) AdminUpdateUser(email string, userDomain *users.Domain) (users.Domain, error) {
-	doc, err := ur.usersCollection().Doc(email).Get(ur.ctx)
-	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			return users.Domain{}, errors.New("email not registered")
-		}
-	}
-
-	userData := Model{}
-	if err := doc.DataTo(&userData); err != nil {
-		return users.Domain{}, err
-	}
-
-	rec := FromDomain(userDomain)
-
-	userData.Status = rec.Status
-	userData.Role = rec.Role
-	userData.UpdatedAt = time.Now()
-
-	_, err = ur.usersCollection().Doc(email).Set(ur.ctx, userData)
-	if err != nil {
-		return users.Domain{}, errors.New("failed to update")
-	}
-
-	return userData.ToDomain(), nil
-}
-
-func (ur *UserRepository) GetUserList() ([]users.Domain, error) {
-	iter := ur.usersCollection().Documents(ur.ctx)
-	userData := []users.Domain{}
-
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-
-		user := Model{}
-		if err := doc.DataTo(&user); err != nil {
-			return nil, err
-		}
-
-		userData = append(userData, user.ToDomain())
-	}
-
-	return userData, nil
+	return nil
 }
 
 func (ur *UserRepository) Delete(email string) error {

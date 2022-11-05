@@ -20,7 +20,6 @@ func NewRoomController(roomUC rooms.UseCase) *RoomController {
 
 func (roomCtrl *RoomController) GetAllRoom(c echo.Context) error {
 	rooms, err := roomCtrl.roomUseCase.GetAllRoom()
-
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": "failed to get all room",
@@ -35,24 +34,22 @@ func (roomCtrl *RoomController) GetAllRoom(c echo.Context) error {
 
 func (roomCtrl *RoomController) CreateRoom(c echo.Context) error {
 	RoomInput := request.Room{}
-
 	if err := c.Bind(&RoomInput); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": err.Error(),
+			"message": "invalid request",
 		})
 	}
 
-	if RoomInput.Validate() != nil {
+	if err := RoomInput.Validate(); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"message": "validation failed",
 		})
 	}
 
 	err := roomCtrl.roomUseCase.CreateRoom(RoomInput.ToDomain())
-
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"message": "failed to create room",
+			"message": "invalid request",
 		})
 	}
 
@@ -63,7 +60,6 @@ func (roomCtrl *RoomController) CreateRoom(c echo.Context) error {
 
 func (roomCtrl *RoomController) UpdateRoom(c echo.Context) error {
 	RoomInput := request.Room{}
-
 	if err := c.Bind(&RoomInput); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"message": err.Error(),
@@ -77,7 +73,6 @@ func (roomCtrl *RoomController) UpdateRoom(c echo.Context) error {
 	}
 
 	roomData, err := roomCtrl.roomUseCase.UpdateRoom(RoomInput.ToDomain())
-
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": "failed to update room",
@@ -92,9 +87,7 @@ func (roomCtrl *RoomController) UpdateRoom(c echo.Context) error {
 
 func (roomCtrl *RoomController) DeleteRoom(c echo.Context) error {
 	roomType := c.Param("room-type")
-
 	err := roomCtrl.roomUseCase.DeleteRoom(roomType)
-
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": err.Error(),

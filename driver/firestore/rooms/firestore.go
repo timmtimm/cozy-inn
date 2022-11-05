@@ -48,7 +48,23 @@ func (rr *RoomRepository) GetAllRoom() ([]rooms.Domain, error) {
 	return roomList, nil
 }
 
-func (rr *RoomRepository) CreateRoom(roomDomain *rooms.Domain) error {
+func (rr *RoomRepository) GetRoomByType(roomType string) (rooms.Domain, error) {
+	doc, err := rr.roomsCollection().Doc(roomType).Get(rr.ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return rooms.Domain{}, errors.New("room type not registered")
+		}
+	}
+
+	roomData := Model{}
+	if err := doc.DataTo(&roomData); err != nil {
+		return rooms.Domain{}, err
+	}
+
+	return roomData.ToDomain(), nil
+}
+
+func (rr *RoomRepository) Create(roomDomain rooms.Domain) error {
 	rec := FromDomain(roomDomain)
 
 	doc, err := rr.roomsCollection().Doc(rec.RoomType).Get(rr.ctx)
@@ -74,69 +90,28 @@ func (rr *RoomRepository) CreateRoom(roomDomain *rooms.Domain) error {
 	}
 
 	if doc != nil {
-		return errors.New("email already registered")
+		return errors.New("room type already added")
 	}
 
-	return errors.New("failed to register")
+	return errors.New("failed to add room")
 }
 
-func (rr *RoomRepository) UpdateRoom(roomDomain *rooms.Domain) (rooms.Domain, error) {
-	doc, err := rr.roomsCollection().Doc(roomDomain.RoomType).Get(rr.ctx)
+func (rr *RoomRepository) Update(room rooms.Domain) error {
+	rec := FromDomain(room)
+
+	_, err := rr.roomsCollection().Doc(room.RoomType).Set(rr.ctx, rec)
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			return rooms.Domain{}, errors.New("room type not registered")
-		}
-	}
-
-	roomData := Model{}
-	if err := doc.DataTo(&roomData); err != nil {
-		return rooms.Domain{}, err
-	}
-
-	roomData.Capacity = roomDomain.Capacity
-	roomData.Room = roomDomain.Room
-	roomData.Description = roomDomain.Description
-	roomData.Facilities = roomDomain.Facilities
-	roomData.ImageRoom_URLS = roomDomain.ImageRoom_URLS
-	roomData.Rules = roomDomain.Rules
-	roomData.UpdatedAt = time.Now()
-
-	_, err = rr.roomsCollection().Doc(roomDomain.RoomType).Set(rr.ctx, roomData)
-	if err != nil {
-		return rooms.Domain{}, errors.New("failed to update")
-	}
-
-	return roomData.ToDomain(), nil
-}
-
-func (rr *RoomRepository) DeleteRoom(roomType string) error {
-	_, err := rr.roomsCollection().Doc(roomType).Get(rr.ctx)
-	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			return errors.New("room type not registered")
-		}
-	}
-
-	_, err = rr.roomsCollection().Doc(roomType).Delete(rr.ctx)
-	if err != nil {
-		return err
+		return errors.New("failed to update room")
 	}
 
 	return nil
 }
 
-func (rr *RoomRepository) GetRoomByType(roomType string) (rooms.Domain, error) {
-	doc, err := rr.roomsCollection().Doc(roomType).Get(rr.ctx)
+func (rr *RoomRepository) Delete(roomType string) error {
+	_, err := rr.roomsCollection().Doc(roomType).Delete(rr.ctx)
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			return rooms.Domain{}, errors.New("room type not registered")
-		}
+		return err
 	}
 
-	roomData := Model{}
-	if err := doc.DataTo(&roomData); err != nil {
-		return rooms.Domain{}, err
-	}
-
-	return roomData.ToDomain(), nil
+	return nil
 }

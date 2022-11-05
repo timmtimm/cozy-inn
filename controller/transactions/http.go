@@ -27,7 +27,7 @@ func (transactionCtrl *TransactionController) GetAllTransaction(c echo.Context) 
 		})
 	}
 
-	transactions, err := transactionCtrl.transactionUseCase.GetAllTransaction(email)
+	transactions, err := transactionCtrl.transactionUseCase.GetAllTransactionUser(email)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": "failed to get all transaction",
@@ -74,8 +74,44 @@ func (transactionCtrl *TransactionController) CreateTransaction(c echo.Context) 
 	})
 }
 
+func (transactionCtrl *TransactionController) GetTransaction(c echo.Context) error {
+	transactionID := c.Param("transaction-id")
+
+	email, err := middleware.GetEmailByToken(c)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	transaction, err := transactionCtrl.transactionUseCase.GetTransaction(transactionID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": "failed to get transaction",
+		})
+	}
+
+	if transaction.UserEmail != email {
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
+			"message": "transaction not found",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success get transaction",
+		"data":    transaction,
+	})
+}
+
 func (transactionCtrl *TransactionController) UpdatePayment(c echo.Context) error {
 	transactionID := c.Param("transaction-id")
+
+	email, err := middleware.GetEmailByToken(c)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
 
 	userInput := request.Payment{}
 	if err := c.Bind(&userInput); err != nil {
@@ -90,7 +126,7 @@ func (transactionCtrl *TransactionController) UpdatePayment(c echo.Context) erro
 		})
 	}
 
-	transaction, err := transactionCtrl.transactionUseCase.UpdatePayment(transactionID, userInput.Payment_URL)
+	transaction, err := transactionCtrl.transactionUseCase.UpdatePayment(transactionID, email, userInput.Payment_URL)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": err.Error(),
@@ -103,8 +139,8 @@ func (transactionCtrl *TransactionController) UpdatePayment(c echo.Context) erro
 	})
 }
 
-func (transactionCtrl *TransactionController) GetPaymentNotVerified(c echo.Context) error {
-	transactions, err := transactionCtrl.transactionUseCase.GetPaymentNotVerified()
+func (transactionCtrl *TransactionController) GetAllPaymentNotVerified(c echo.Context) error {
+	transactions, err := transactionCtrl.transactionUseCase.GetAllPaymentNotVerified()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": err.Error(),
@@ -162,8 +198,8 @@ func (transactionCtrl *TransactionController) UpdateVerification(c echo.Context)
 	})
 }
 
-func (transactionCtrl *TransactionController) GetAllCheckIn(c echo.Context) error {
-	transactions, err := transactionCtrl.transactionUseCase.GetAllCheckIn()
+func (transactionCtrl *TransactionController) GetAllReadyCheckIn(c echo.Context) error {
+	transactions, err := transactionCtrl.transactionUseCase.GetAllReadyCheckIn()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": "failed to get all check in",
@@ -176,7 +212,7 @@ func (transactionCtrl *TransactionController) GetAllCheckIn(c echo.Context) erro
 	})
 }
 
-func (transactionCtrl *TransactionController) GetCheckInTransaction(c echo.Context) error {
+func (transactionCtrl *TransactionController) GetCheckIn(c echo.Context) error {
 	transactionID := c.Param("transaction-id")
 
 	transaction, err := transactionCtrl.transactionUseCase.GetCheckInTransaction(transactionID)
@@ -192,7 +228,7 @@ func (transactionCtrl *TransactionController) GetCheckInTransaction(c echo.Conte
 	})
 }
 
-func (transactionCtrl *TransactionController) CheckInTransaction(c echo.Context) error {
+func (transactionCtrl *TransactionController) UpdateCheckIn(c echo.Context) error {
 	transactionID := c.Param("transaction-id")
 
 	transaction, err := transactionCtrl.transactionUseCase.UpdateCheckIn(transactionID)
@@ -208,8 +244,8 @@ func (transactionCtrl *TransactionController) CheckInTransaction(c echo.Context)
 	})
 }
 
-func (transactionCtrl *TransactionController) GetAllCheckOut(c echo.Context) error {
-	transactions, err := transactionCtrl.transactionUseCase.GetAllCheckOut()
+func (transactionCtrl *TransactionController) GetAllReadyCheckOut(c echo.Context) error {
+	transactions, err := transactionCtrl.transactionUseCase.GetAllReadyCheckOut()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": "failed to get all check out",
@@ -222,7 +258,7 @@ func (transactionCtrl *TransactionController) GetAllCheckOut(c echo.Context) err
 	})
 }
 
-func (transactionCtrl *TransactionController) GetCheckOutTransaction(c echo.Context) error {
+func (transactionCtrl *TransactionController) GetCheckOut(c echo.Context) error {
 	transactionID := c.Param("transaction-id")
 
 	transaction, err := transactionCtrl.transactionUseCase.GetCheckOutTransaction(transactionID)
@@ -238,7 +274,7 @@ func (transactionCtrl *TransactionController) GetCheckOutTransaction(c echo.Cont
 	})
 }
 
-func (transactionCtrl *TransactionController) CheckOutTransaction(c echo.Context) error {
+func (transactionCtrl *TransactionController) UpdateCheckOut(c echo.Context) error {
 	transactionID := c.Param("transaction-id")
 
 	transaction, err := transactionCtrl.transactionUseCase.UpdateCheckOut(transactionID)
@@ -254,10 +290,10 @@ func (transactionCtrl *TransactionController) CheckOutTransaction(c echo.Context
 	})
 }
 
-func (transactionCtrl *TransactionController) DeleteTransaction(c echo.Context) error {
+func (transactionCtrl *TransactionController) AdminDelete(c echo.Context) error {
 	transactionID := c.Param("transaction-id")
 
-	err := transactionCtrl.transactionUseCase.DeleteTransaction(transactionID)
+	err := transactionCtrl.transactionUseCase.AdminDeleteTransaction(transactionID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": err.Error(),
