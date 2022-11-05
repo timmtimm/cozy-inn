@@ -55,6 +55,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	transaction.PUT("/:transaction-id", cl.TransactionController.UpdatePayment, userMiddleware.CheckToken)
 	transaction.GET("/verification", cl.TransactionController.GetPaymentNotVerified, AdminReceptionistMiddleware.CheckToken)
 	transaction.GET("/verification/:transaction-id", cl.TransactionController.GetTransactionOnVerification, AdminReceptionistMiddleware.CheckToken)
+	transaction.PUT("/verification/:transaction-id", cl.TransactionController.UpdateVerification, AdminReceptionistMiddleware.CheckToken)
 
 	admin := e.Group("/api/v1/admin", adminMiddleware.CheckToken)
 	admin.GET("/user-list", cl.UserController.GetUserList)

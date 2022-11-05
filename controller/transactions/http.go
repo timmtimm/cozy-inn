@@ -132,3 +132,32 @@ func (transactionCtrl *TransactionController) GetTransactionOnVerification(c ech
 		"data":    transaction,
 	})
 }
+
+func (transactionCtrl *TransactionController) UpdateVerification(c echo.Context) error {
+	transactionID := c.Param("transaction-id")
+
+	userInput := request.Verification{}
+	if err := c.Bind(&userInput); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	if userInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "validation failed",
+		})
+	}
+
+	transaction, err := transactionCtrl.transactionUseCase.UpdateVerification(transactionID, userInput.Status)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success update verification",
+		"data":    transaction,
+	})
+}

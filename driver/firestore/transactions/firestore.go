@@ -188,3 +188,26 @@ func (tr *TransactionRepository) GetTransactionOnVerification(transactionID stri
 
 	return transaction, nil
 }
+
+func (tr *TransactionRepository) UpdateVerification(transactionID string, status string) (transactions.Domain, error) {
+	transactionDoc := tr.transactionsCollection().Doc(transactionID)
+	transaction, err := transactionDoc.Get(tr.ctx)
+	if err != nil {
+		return transactions.Domain{}, errors.New("transaction not available")
+	}
+
+	transactionData := Model{}
+	if err := transaction.DataTo(&transactionData); err != nil {
+		return transactions.Domain{}, err
+	}
+
+	transactionData.Status = status
+	transactionData.UpdatedAt = time.Now()
+
+	_, err = transactionDoc.Set(tr.ctx, transactionData)
+	if err != nil {
+		return transactions.Domain{}, err
+	}
+
+	return transactionData.ToDomain(), nil
+}
