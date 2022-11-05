@@ -223,3 +223,17 @@ func (tu *TransactionUseCase) UpdateCheckOut(transactionID string) (Domain, erro
 
 	return transaction, nil
 }
+
+func (tu *TransactionUseCase) DeleteTransaction(transactionID string) error {
+	_, err := tu.transactionRepository.GetTransactionByID(transactionID)
+	if err != nil {
+		return err
+	}
+
+	err = tu.transactionRepository.Delete(transactionID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
