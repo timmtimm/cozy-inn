@@ -129,3 +129,12 @@ func (tu *TransactionUseCase) UpdateVerification(transactionID string, status st
 
 	return transaction, nil
 }
+
+func (tu *TransactionUseCase) GetAllCheckIn() ([]Domain, error) {
+	transactions, err := tu.transactionRepository.GetAllCheckIn()
+	if err != nil {
+		return []Domain{}, err
+	}
+
+	return transactions, nil
+}

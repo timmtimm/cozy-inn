@@ -161,3 +161,17 @@ func (transactionCtrl *TransactionController) UpdateVerification(c echo.Context)
 		"data":    transaction,
 	})
 }
+
+func (transactionCtrl *TransactionController) GetAllCheckIn(c echo.Context) error {
+	transactions, err := transactionCtrl.transactionUseCase.GetAllCheckIn()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": "failed to get all check in",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success get all check in",
+		"data":    transactions,
+	})
+}
