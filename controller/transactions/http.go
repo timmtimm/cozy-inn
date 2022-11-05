@@ -237,3 +237,19 @@ func (transactionCtrl *TransactionController) GetCheckOutTransaction(c echo.Cont
 		"data":    transaction,
 	})
 }
+
+func (transactionCtrl *TransactionController) CheckOutTransaction(c echo.Context) error {
+	transactionID := c.Param("transaction-id")
+
+	transaction, err := transactionCtrl.transactionUseCase.UpdateCheckOut(transactionID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success update check out",
+		"data":    transaction,
+	})
+}

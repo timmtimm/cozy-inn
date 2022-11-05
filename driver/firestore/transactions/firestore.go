@@ -299,3 +299,12 @@ func (tr *TransactionRepository) GetAllCheckOut() ([]transactions.Domain, error)
 
 	return transactionList, nil
 }
+
+func (tr *TransactionRepository) Update(transcationID string, transactionDomain transactions.Domain) error {
+	_, err := tr.transactionsCollection().Doc(transcationID).Set(tr.ctx, transactionDomain)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -4,6 +4,7 @@ import (
 	"cozy-inn/businesses/rooms"
 	"errors"
 	"fmt"
+	"time"
 )
 
 type TransactionUseCase struct {
@@ -196,6 +197,28 @@ func (tu *TransactionUseCase) GetCheckOutTransaction(transactionID string) (Doma
 
 	if transaction.Status != "checked-in" {
 		return Domain{}, fmt.Errorf("transaction is on %s", transaction.Status)
+	}
+
+	return transaction, nil
+}
+
+func (tu *TransactionUseCase) UpdateCheckOut(transactionID string) (Domain, error) {
+	transaction, err := tu.transactionRepository.GetTransactionByID(transactionID)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	if transaction.Status != "checked-in" {
+		return Domain{}, fmt.Errorf("transaction is on %s", transaction.Status)
+	}
+
+	transaction.Status = "done"
+	transaction.CheckOut = time.Now()
+	transaction.UpdatedAt = transaction.CheckOut
+
+	err = tu.transactionRepository.Update(transactionID, transaction)
+	if err != nil {
+		return Domain{}, err
 	}
 
 	return transaction, nil
