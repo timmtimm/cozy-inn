@@ -25,7 +25,6 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	// single role
 	userMiddleware := _middleware.RoleMiddleware{Role: []string{"user"}}
 	adminMiddleware := _middleware.RoleMiddleware{Role: []string{"admin"}}
-	// receptionistMiddleware := _middleware.RoleMiddleware{Role: []string{"receptionist"}}
 
 	// multiple role
 	AllMiddleware := _middleware.RoleMiddleware{Role: []string{"user", "receptionist", "admin"}}
@@ -56,6 +55,9 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	transaction.GET("/verification", cl.TransactionController.GetPaymentNotVerified, AdminReceptionistMiddleware.CheckToken)
 	transaction.GET("/verification/:transaction-id", cl.TransactionController.GetTransactionOnVerification, AdminReceptionistMiddleware.CheckToken)
 	transaction.PUT("/verification/:transaction-id", cl.TransactionController.UpdateVerification, AdminReceptionistMiddleware.CheckToken)
+	transaction.GET("/check-in", cl.TransactionController.GetAllCheckIn, AdminReceptionistMiddleware.CheckToken)
+	transaction.GET("/check-in/:transaction-id", cl.TransactionController.GetCheckInTransaction, AdminReceptionistMiddleware.CheckToken)
+	transaction.PUT("/check-in/:transaction-id", cl.TransactionController.CheckInTransaction, AdminReceptionistMiddleware.CheckToken)
 
 	admin := e.Group("/api/v1/admin", adminMiddleware.CheckToken)
 	admin.GET("/user-list", cl.UserController.GetUserList)

@@ -28,6 +28,9 @@ type UseCase interface {
 	GetPaymentNotVerified() ([]Domain, error)
 	GetTransactionOnVerification(transactionID string) (Domain, error)
 	UpdateVerification(transactionID string, status string) (Domain, error)
+	GetAllCheckIn() ([]Domain, error)
+	GetCheckInTransaction(transactionID string) (Domain, error)
+	UpdateCheckIn(transactionID string) (Domain, error)
 }
 
 type Repository interface {
@@ -39,4 +42,7 @@ type Repository interface {
 	GetPaymentNotVerified() ([]Domain, error)
 	GetTransactionOnVerification(transactionID string) (Domain, error)
 	UpdateVerification(transactionID string, status string) (Domain, error)
+	GetAllCheckIn() ([]Domain, error)
+	GetCheckInTransaction(transactionID string) (Domain, error)
+	UpdateCheckIn(transactionID string) (Domain, error)
 }

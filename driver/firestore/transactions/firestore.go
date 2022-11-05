@@ -211,3 +211,66 @@ func (tr *TransactionRepository) UpdateVerification(transactionID string, status
 
 	return transactionData.ToDomain(), nil
 }
+
+func (tr *TransactionRepository) GetAllCheckIn() ([]transactions.Domain, error) {
+	transactionList := []transactions.Domain{}
+	transactionDoc := tr.transactionsCollection().Where("status", "==", "verified")
+
+	iter := transactionDoc.Documents(tr.ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transaction := transactions.Domain{}
+		if err := doc.DataTo(&transaction); err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transactionList = append(transactionList, transaction)
+	}
+
+	return transactionList, nil
+}
+
+func (tr *TransactionRepository) GetCheckInTransaction(transactionID string) (transactions.Domain, error) {
+	transactionDoc, err := tr.transactionsCollection().Doc(transactionID).Get(tr.ctx)
+	if err != nil {
+		return transactions.Domain{}, errors.New("transaction not available")
+	}
+
+	transaction := transactions.Domain{}
+	if err := transactionDoc.DataTo(&transaction); err != nil {
+		return transactions.Domain{}, err
+	}
+
+	return transaction, nil
+}
+
+func (tr *TransactionRepository) UpdateCheckIn(transactionID string) (transactions.Domain, error) {
+	transactionDoc := tr.transactionsCollection().Doc(transactionID)
+	transaction, err := transactionDoc.Get(tr.ctx)
+	if err != nil {
+		return transactions.Domain{}, errors.New("transaction not available")
+	}
+
+	transactionData := Model{}
+	if err := transaction.DataTo(&transactionData); err != nil {
+		return transactions.Domain{}, err
+	}
+
+	transactionData.Status = "checked-in"
+	transactionData.CheckIn = time.Now()
+	transactionData.UpdatedAt = transactionData.CheckIn
+
+	_, err = transactionDoc.Set(tr.ctx, transactionData)
+	if err != nil {
+		return transactions.Domain{}, err
+	}
+
+	return transactionData.ToDomain(), nil
+}
