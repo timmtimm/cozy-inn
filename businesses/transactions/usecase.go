@@ -173,3 +173,12 @@ func (tu *TransactionUseCase) UpdateCheckIn(transactionID string) (Domain, error
 
 	return transaction, nil
 }
+
+func (tu *TransactionUseCase) GetAllCheckOut() ([]Domain, error) {
+	transactions, err := tu.transactionRepository.GetAllCheckOut()
+	if err != nil {
+		return []Domain{}, err
+	}
+
+	return transactions, nil
+}

@@ -207,3 +207,17 @@ func (transactionCtrl *TransactionController) CheckInTransaction(c echo.Context)
 		"data":    transaction,
 	})
 }
+
+func (transactionCtrl *TransactionController) GetAllCheckOut(c echo.Context) error {
+	transactions, err := transactionCtrl.transactionUseCase.GetAllCheckOut()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": "failed to get all check out",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success get all check out",
+		"data":    transactions,
+	})
+}

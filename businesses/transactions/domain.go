@@ -31,6 +31,7 @@ type UseCase interface {
 	GetAllCheckIn() ([]Domain, error)
 	GetCheckInTransaction(transactionID string) (Domain, error)
 	UpdateCheckIn(transactionID string) (Domain, error)
+	GetAllCheckOut() ([]Domain, error)
 }
 
 type Repository interface {
@@ -45,4 +46,5 @@ type Repository interface {
 	GetAllCheckIn() ([]Domain, error)
 	GetCheckInTransaction(transactionID string) (Domain, error)
 	UpdateCheckIn(transactionID string) (Domain, error)
+	GetAllCheckOut() ([]Domain, error)
 }
