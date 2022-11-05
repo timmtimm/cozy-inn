@@ -308,3 +308,12 @@ func (tr *TransactionRepository) Update(transcationID string, transactionDomain 
 
 	return nil
 }
+
+func (tr *TransactionRepository) Delete(transactionID string) error {
+	_, err := tr.transactionsCollection().Doc(transactionID).Delete(tr.ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
