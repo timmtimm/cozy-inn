@@ -19,7 +19,21 @@ func NewRoomUsecase(rr Repository) UseCase {
 }
 
 func (ru *RoomUseCase) GetAllRoom() ([]Domain, error) {
-	return ru.roomRepository.GetAllRoom()
+	rooms, err := ru.roomRepository.GetAllRoom()
+	if err != nil {
+		return []Domain{}, err
+	}
+
+	return rooms, nil
+}
+
+func (ru *RoomUseCase) GetRoom(roomType string) (Domain, error) {
+	room, err := ru.roomRepository.GetRoomByType(roomType)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	return room, nil
 }
 
 func (ru *RoomUseCase) CreateRoom(roomInput Domain) error {
