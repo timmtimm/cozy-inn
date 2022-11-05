@@ -17,7 +17,7 @@ type Domain struct {
 
 type UseCase interface {
 	Register(userDomain *Domain) (string, error)
-	SudoRegister(userDomain *Domain) (string, error)
+	SudoRegister(userDomain *Domain) error
 	Login(userDomain *Domain) (string, error)
 	GetUserByEmail(email string) (Domain, error)
 	UpdateUser(email string, userDomain *Domain) (Domain, error)

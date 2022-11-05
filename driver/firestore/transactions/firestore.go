@@ -149,3 +149,28 @@ func (tr *TransactionRepository) UpdatePayment(transactionID string, payment_URL
 
 	return transactionData.ToDomain(), nil
 }
+
+func (tr *TransactionRepository) GetPaymentNotVerified() ([]transactions.Domain, error) {
+	transactionList := []transactions.Domain{}
+	transactionDoc := tr.transactionsCollection().Where("status", "==", "verification-pending")
+
+	iter := transactionDoc.Documents(tr.ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transaction := transactions.Domain{}
+		if err := doc.DataTo(&transaction); err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transactionList = append(transactionList, transaction)
+	}
+
+	return transactionList, nil
+}

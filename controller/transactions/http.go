@@ -102,3 +102,17 @@ func (transactionCtrl *TransactionController) UpdatePayment(c echo.Context) erro
 		"data":    transaction,
 	})
 }
+
+func (transactionCtrl *TransactionController) GetPaymentNotVerified(c echo.Context) error {
+	transactions, err := transactionCtrl.transactionUseCase.GetPaymentNotVerified()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success get payment not verified",
+		"data":    transactions,
+	})
+}

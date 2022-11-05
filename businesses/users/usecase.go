@@ -28,7 +28,7 @@ func (uu *UserUseCase) Register(userDomain *Domain) (string, error) {
 	return token, nil
 }
 
-func (uu *UserUseCase) SudoRegister(userDomain *Domain) (string, error) {
+func (uu *UserUseCase) SudoRegister(userDomain *Domain) error {
 	avaliableRoles := []string{"user", "receptionist"}
 	found := false
 	for _, avaliableRole := range avaliableRoles {
@@ -38,16 +38,15 @@ func (uu *UserUseCase) SudoRegister(userDomain *Domain) (string, error) {
 	}
 
 	if !found {
-		return "", errors.New("invalid role")
+		return errors.New("invalid role")
 	}
 
 	err := uu.userRepository.Register(userDomain)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	token := uu.jwtAuth.GenerateToken(userDomain.Email, userDomain.Role)
-	return token, nil
+	return nil
 }
 
 func (uu *UserUseCase) Login(userDomain *Domain) (string, error) {

@@ -67,7 +67,7 @@ func (userCtrl *UserController) AdminRegister(c echo.Context) error {
 		})
 	}
 
-	token, err := userCtrl.userUseCase.SudoRegister(userInput.ToDomain())
+	err := userCtrl.userUseCase.SudoRegister(userInput.ToDomain())
 
 	if err != nil {
 		return c.JSON(http.StatusConflict, map[string]string{
@@ -77,7 +77,6 @@ func (userCtrl *UserController) AdminRegister(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, map[string]string{
 		"message": "success to register",
-		"token":   token,
 	})
 }
 

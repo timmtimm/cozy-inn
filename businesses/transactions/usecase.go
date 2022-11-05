@@ -77,3 +77,12 @@ func (tu *TransactionUseCase) UpdatePayment(transactionID string, payment_URL st
 
 	return transaction, nil
 }
+
+func (tu *TransactionUseCase) GetPaymentNotVerified() ([]Domain, error) {
+	transactions, err := tu.transactionRepository.GetPaymentNotVerified()
+	if err != nil {
+		return []Domain{}, err
+	}
+
+	return transactions, nil
+}
