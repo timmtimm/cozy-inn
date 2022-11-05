@@ -138,3 +138,16 @@ func (tu *TransactionUseCase) GetAllCheckIn() ([]Domain, error) {
 
 	return transactions, nil
 }
+
+func (tu *TransactionUseCase) GetCheckInTransaction(transactionID string) (Domain, error) {
+	transaction, err := tu.transactionRepository.GetCheckInTransaction(transactionID)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	if transaction.Status != "verified" {
+		return Domain{}, errors.New("transaction is not verified")
+	}
+
+	return transaction, nil
+}

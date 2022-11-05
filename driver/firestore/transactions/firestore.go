@@ -236,3 +236,17 @@ func (tr *TransactionRepository) GetAllCheckIn() ([]transactions.Domain, error) 
 
 	return transactionList, nil
 }
+
+func (tr *TransactionRepository) GetCheckInTransaction(transactionID string) (transactions.Domain, error) {
+	transactionDoc, err := tr.transactionsCollection().Doc(transactionID).Get(tr.ctx)
+	if err != nil {
+		return transactions.Domain{}, errors.New("transaction not available")
+	}
+
+	transaction := transactions.Domain{}
+	if err := transactionDoc.DataTo(&transaction); err != nil {
+		return transactions.Domain{}, err
+	}
+
+	return transaction, nil
+}
