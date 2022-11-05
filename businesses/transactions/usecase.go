@@ -86,3 +86,12 @@ func (tu *TransactionUseCase) GetPaymentNotVerified() ([]Domain, error) {
 
 	return transactions, nil
 }
+
+func (tu *TransactionUseCase) GetTransactionOnVerification(transactionID string) (Domain, error) {
+	transaction, err := tu.transactionRepository.GetTransactionOnVerification(transactionID)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	return transaction, nil
+}

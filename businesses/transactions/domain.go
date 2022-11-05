@@ -26,6 +26,7 @@ type UseCase interface {
 	CreateTransaction(email string, transactionDomain *Domain) (Domain, error)
 	UpdatePayment(transactionID string, payment_URL string) (Domain, error)
 	GetPaymentNotVerified() ([]Domain, error)
+	GetTransactionOnVerification(transactionID string) (Domain, error)
 }
 
 type Repository interface {
@@ -35,4 +36,5 @@ type Repository interface {
 	GetTransactionByID(transactionID string) (Domain, error)
 	UpdatePayment(transactionID string, payment_URL string) (Domain, error)
 	GetPaymentNotVerified() ([]Domain, error)
+	GetTransactionOnVerification(transactionID string) (Domain, error)
 }

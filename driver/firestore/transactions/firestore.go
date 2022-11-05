@@ -105,7 +105,7 @@ func (tr *TransactionRepository) CreateTransaction(email string, transactionDoma
 		UpdatedAt:     rec.UpdatedAt,
 	})
 	if err != nil {
-		return transactions.Domain{}, errors.New("i miss her")
+		return transactions.Domain{}, err
 	}
 
 	return rec.ToDomain(), nil
@@ -114,7 +114,7 @@ func (tr *TransactionRepository) CreateTransaction(email string, transactionDoma
 func (tr *TransactionRepository) GetTransactionByID(transactionID string) (transactions.Domain, error) {
 	transactionDoc, err := tr.transactionsCollection().Doc(transactionID).Get(tr.ctx)
 	if err != nil {
-		return transactions.Domain{}, err
+		return transactions.Domain{}, errors.New("transaction not available")
 	}
 
 	transaction := transactions.Domain{}
@@ -173,4 +173,18 @@ func (tr *TransactionRepository) GetPaymentNotVerified() ([]transactions.Domain,
 	}
 
 	return transactionList, nil
+}
+
+func (tr *TransactionRepository) GetTransactionOnVerification(transactionID string) (transactions.Domain, error) {
+	transactionDoc, err := tr.transactionsCollection().Doc(transactionID).Get(tr.ctx)
+	if err != nil {
+		return transactions.Domain{}, errors.New("transaction not available")
+	}
+
+	transaction := transactions.Domain{}
+	if err := transactionDoc.DataTo(&transaction); err != nil {
+		return transactions.Domain{}, err
+	}
+
+	return transaction, nil
 }
