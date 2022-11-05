@@ -250,3 +250,27 @@ func (tr *TransactionRepository) GetCheckInTransaction(transactionID string) (tr
 
 	return transaction, nil
 }
+
+func (tr *TransactionRepository) UpdateCheckIn(transactionID string) (transactions.Domain, error) {
+	transactionDoc := tr.transactionsCollection().Doc(transactionID)
+	transaction, err := transactionDoc.Get(tr.ctx)
+	if err != nil {
+		return transactions.Domain{}, errors.New("transaction not available")
+	}
+
+	transactionData := Model{}
+	if err := transaction.DataTo(&transactionData); err != nil {
+		return transactions.Domain{}, err
+	}
+
+	transactionData.Status = "checked-in"
+	transactionData.CheckIn = time.Now()
+	transactionData.UpdatedAt = transactionData.CheckIn
+
+	_, err = transactionDoc.Set(tr.ctx, transactionData)
+	if err != nil {
+		return transactions.Domain{}, err
+	}
+
+	return transactionData.ToDomain(), nil
+}

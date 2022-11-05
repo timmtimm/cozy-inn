@@ -191,3 +191,19 @@ func (transactionCtrl *TransactionController) GetCheckInTransaction(c echo.Conte
 		"data":    transaction,
 	})
 }
+
+func (transactionCtrl *TransactionController) CheckInTransaction(c echo.Context) error {
+	transactionID := c.Param("transaction-id")
+
+	transaction, err := transactionCtrl.transactionUseCase.UpdateCheckIn(transactionID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success update check in",
+		"data":    transaction,
+	})
+}

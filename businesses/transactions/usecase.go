@@ -146,7 +146,29 @@ func (tu *TransactionUseCase) GetCheckInTransaction(transactionID string) (Domai
 	}
 
 	if transaction.Status != "verified" {
+		return Domain{}, errors.New("transaction is not check in ready")
+	}
+
+	return transaction, nil
+}
+
+func (tu *TransactionUseCase) UpdateCheckIn(transactionID string) (Domain, error) {
+	check, err := tu.transactionRepository.GetCheckInTransaction(transactionID)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	if check.Status == "checked-in" {
+		return Domain{}, errors.New("transaction is already checked in")
+	} else if check.Status == "done" {
+		return Domain{}, errors.New("transaction already done")
+	} else if check.Status != "verified" {
 		return Domain{}, errors.New("transaction is not verified")
+	}
+
+	transaction, err := tu.transactionRepository.UpdateCheckIn(transactionID)
+	if err != nil {
+		return Domain{}, err
 	}
 
 	return transaction, nil
