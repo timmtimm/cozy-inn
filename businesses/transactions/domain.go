@@ -16,7 +16,7 @@ type Domain struct {
 	CheckOut      time.Time
 	Status        string
 	Bill          int
-	PaymentProof  string
+	Payment_URL   string
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
@@ -24,10 +24,13 @@ type Domain struct {
 type UseCase interface {
 	GetAllTransaction(email string) ([]Domain, error)
 	CreateTransaction(email string, transactionDomain *Domain) (Domain, error)
+	UpdatePayment(transactionID string, payment_URL string) (Domain, error)
 }
 
 type Repository interface {
 	GetAllTransaction(email string) ([]Domain, error)
 	CreateTransaction(email string, transactionDomain *Domain, RoomData rooms.Domain) (Domain, error)
-	GetFinishedTransactionByRoom(roomType string, startDate time.Time, roomNumber int) ([]Domain, error)
+	GetTransactionByRoomAndDate(roomType string, startDate time.Time, roomNumber int) ([]Domain, error)
+	GetTransactionByID(transactionID string) (Domain, error)
+	UpdatePayment(transactionID string, payment_URL string) (Domain, error)
 }

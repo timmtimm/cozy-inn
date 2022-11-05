@@ -18,7 +18,7 @@ type Transaction struct {
 	CheckOut      time.Time `json:"checkOut" firestore:"checkOut,omitempty"`
 	Status        string    `json:"status" firestore:"status"`
 	Bill          int       `json:"bill" firestore:"bill"`
-	PaymentProof  string    `json:"paymentProof" firestore:"paymentProof,omitempty"`
+	Payment_URL   string    `json:"payment_URL" firestore:"payment_URL,omitempty"`
 }
 
 func (req *Transaction) ToDomain() *transactions.Domain {
@@ -32,11 +32,27 @@ func (req *Transaction) ToDomain() *transactions.Domain {
 		CheckIn:       req.CheckIn,
 		Status:        req.Status,
 		Bill:          req.Bill,
-		PaymentProof:  req.PaymentProof,
+		Payment_URL:   req.Payment_URL,
 	}
 }
 
 func (req *Transaction) Validate() error {
+	validate := validator.New()
+	err := validate.Struct(req)
+	return err
+}
+
+type Payment struct {
+	Payment_URL string `json:"payment_URL" validate:"required,url" firestore:"payment_URL"`
+}
+
+func (req *Payment) ToDomain() *transactions.Domain {
+	return &transactions.Domain{
+		Payment_URL: req.Payment_URL,
+	}
+}
+
+func (req *Payment) Validate() error {
 	validate := validator.New()
 	err := validate.Struct(req)
 	return err

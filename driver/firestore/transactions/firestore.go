@@ -51,7 +51,7 @@ func (tr *TransactionRepository) GetAllTransaction(email string) ([]transactions
 	return transactionList, nil
 }
 
-func (tr *TransactionRepository) GetFinishedTransactionByRoom(roomType string, startDate time.Time, roomNumber int) ([]transactions.Domain, error) {
+func (tr *TransactionRepository) GetTransactionByRoomAndDate(roomType string, startDate time.Time, roomNumber int) ([]transactions.Domain, error) {
 	transactionList := []transactions.Domain{}
 	transactionDoc := tr.transactionsCollection().Where("roomType", "==", roomType).Where("roomNumber", "==", roomNumber).Where("endDate", ">=", startDate).Where("status", "in", []string{"paid", "unpaid"})
 
@@ -109,4 +109,43 @@ func (tr *TransactionRepository) CreateTransaction(email string, transactionDoma
 	}
 
 	return rec.ToDomain(), nil
+}
+
+func (tr *TransactionRepository) GetTransactionByID(transactionID string) (transactions.Domain, error) {
+	transactionDoc, err := tr.transactionsCollection().Doc(transactionID).Get(tr.ctx)
+	if err != nil {
+		return transactions.Domain{}, err
+	}
+
+	transaction := transactions.Domain{}
+
+	if err := transactionDoc.DataTo(&transaction); err != nil {
+		return transactions.Domain{}, err
+	}
+
+	return transaction, nil
+}
+
+func (tr *TransactionRepository) UpdatePayment(transactionID string, payment_URL string) (transactions.Domain, error) {
+	transactionDoc := tr.transactionsCollection().Doc(transactionID)
+	transaction, err := transactionDoc.Get(tr.ctx)
+	if err != nil {
+		return transactions.Domain{}, err
+	}
+
+	transactionData := Model{}
+	if err := transaction.DataTo(&transactionData); err != nil {
+		return transactions.Domain{}, err
+	}
+
+	transactionData.Payment_URL = payment_URL
+	transactionData.Status = "verification-pending"
+	transactionData.UpdatedAt = time.Now()
+
+	_, err = transactionDoc.Set(tr.ctx, transactionData)
+	if err != nil {
+		return transactions.Domain{}, err
+	}
+
+	return transactionData.ToDomain(), nil
 }

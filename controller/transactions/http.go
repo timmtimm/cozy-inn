@@ -73,3 +73,32 @@ func (transactionCtrl *TransactionController) CreateTransaction(c echo.Context) 
 		"data":    transaction,
 	})
 }
+
+func (transactionCtrl *TransactionController) UpdatePayment(c echo.Context) error {
+	transactionID := c.Param("transaction-id")
+
+	userInput := request.Payment{}
+	if err := c.Bind(&userInput); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	if userInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "validation failed",
+		})
+	}
+
+	transaction, err := transactionCtrl.transactionUseCase.UpdatePayment(transactionID, userInput.Payment_URL)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success update payment",
+		"data":    transaction,
+	})
+}
