@@ -25,6 +25,9 @@ type UseCase interface {
 	GetAllTransaction(email string) ([]Domain, error)
 	CreateTransaction(email string, transactionDomain *Domain) (Domain, error)
 	UpdatePayment(transactionID string, payment_URL string) (Domain, error)
+	GetPaymentNotVerified() ([]Domain, error)
+	GetTransactionOnVerification(transactionID string) (Domain, error)
+	UpdateVerification(transactionID string, status string) (Domain, error)
 }
 
 type Repository interface {
@@ -33,4 +36,7 @@ type Repository interface {
 	GetTransactionByRoomAndDate(roomType string, startDate time.Time, roomNumber int) ([]Domain, error)
 	GetTransactionByID(transactionID string) (Domain, error)
 	UpdatePayment(transactionID string, payment_URL string) (Domain, error)
+	GetPaymentNotVerified() ([]Domain, error)
+	GetTransactionOnVerification(transactionID string) (Domain, error)
+	UpdateVerification(transactionID string, status string) (Domain, error)
 }

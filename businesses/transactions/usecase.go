@@ -77,3 +77,55 @@ func (tu *TransactionUseCase) UpdatePayment(transactionID string, payment_URL st
 
 	return transaction, nil
 }
+
+func (tu *TransactionUseCase) GetPaymentNotVerified() ([]Domain, error) {
+	transactions, err := tu.transactionRepository.GetPaymentNotVerified()
+	if err != nil {
+		return []Domain{}, err
+	}
+
+	return transactions, nil
+}
+
+func (tu *TransactionUseCase) GetTransactionOnVerification(transactionID string) (Domain, error) {
+	transaction, err := tu.transactionRepository.GetTransactionOnVerification(transactionID)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	if transaction.Status != "verification-pending" {
+		return Domain{}, errors.New("transaction is not on verification")
+	}
+
+	return transaction, nil
+}
+
+func (tu *TransactionUseCase) UpdateVerification(transactionID string, status string) (Domain, error) {
+	check, err := tu.transactionRepository.GetTransactionOnVerification(transactionID)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	if check.Status != "verification-pending" {
+		return Domain{}, errors.New("transaction is not on verification")
+	}
+
+	statusList := []string{"verified", "rejected"}
+	isValid := false
+	for _, s := range statusList {
+		if s == status {
+			isValid = true
+		}
+	}
+
+	if !isValid {
+		return Domain{}, errors.New("invalid status")
+	}
+
+	transaction, err := tu.transactionRepository.UpdateVerification(transactionID, status)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	return transaction, nil
+}

@@ -57,3 +57,19 @@ func (req *Payment) Validate() error {
 	err := validate.Struct(req)
 	return err
 }
+
+type Verification struct {
+	Status string `json:"status" validate:"required" firestore:"status"`
+}
+
+func (req *Verification) ToDomain() *transactions.Domain {
+	return &transactions.Domain{
+		Status: req.Status,
+	}
+}
+
+func (req *Verification) Validate() error {
+	validate := validator.New()
+	err := validate.Struct(req)
+	return err
+}

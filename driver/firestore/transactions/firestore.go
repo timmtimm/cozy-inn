@@ -105,7 +105,7 @@ func (tr *TransactionRepository) CreateTransaction(email string, transactionDoma
 		UpdatedAt:     rec.UpdatedAt,
 	})
 	if err != nil {
-		return transactions.Domain{}, errors.New("i miss her")
+		return transactions.Domain{}, err
 	}
 
 	return rec.ToDomain(), nil
@@ -114,7 +114,7 @@ func (tr *TransactionRepository) CreateTransaction(email string, transactionDoma
 func (tr *TransactionRepository) GetTransactionByID(transactionID string) (transactions.Domain, error) {
 	transactionDoc, err := tr.transactionsCollection().Doc(transactionID).Get(tr.ctx)
 	if err != nil {
-		return transactions.Domain{}, err
+		return transactions.Domain{}, errors.New("transaction not available")
 	}
 
 	transaction := transactions.Domain{}
@@ -140,6 +140,68 @@ func (tr *TransactionRepository) UpdatePayment(transactionID string, payment_URL
 
 	transactionData.Payment_URL = payment_URL
 	transactionData.Status = "verification-pending"
+	transactionData.UpdatedAt = time.Now()
+
+	_, err = transactionDoc.Set(tr.ctx, transactionData)
+	if err != nil {
+		return transactions.Domain{}, err
+	}
+
+	return transactionData.ToDomain(), nil
+}
+
+func (tr *TransactionRepository) GetPaymentNotVerified() ([]transactions.Domain, error) {
+	transactionList := []transactions.Domain{}
+	transactionDoc := tr.transactionsCollection().Where("status", "==", "verification-pending")
+
+	iter := transactionDoc.Documents(tr.ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transaction := transactions.Domain{}
+		if err := doc.DataTo(&transaction); err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transactionList = append(transactionList, transaction)
+	}
+
+	return transactionList, nil
+}
+
+func (tr *TransactionRepository) GetTransactionOnVerification(transactionID string) (transactions.Domain, error) {
+	transactionDoc, err := tr.transactionsCollection().Doc(transactionID).Get(tr.ctx)
+	if err != nil {
+		return transactions.Domain{}, errors.New("transaction not available")
+	}
+
+	transaction := transactions.Domain{}
+	if err := transactionDoc.DataTo(&transaction); err != nil {
+		return transactions.Domain{}, err
+	}
+
+	return transaction, nil
+}
+
+func (tr *TransactionRepository) UpdateVerification(transactionID string, status string) (transactions.Domain, error) {
+	transactionDoc := tr.transactionsCollection().Doc(transactionID)
+	transaction, err := transactionDoc.Get(tr.ctx)
+	if err != nil {
+		return transactions.Domain{}, errors.New("transaction not available")
+	}
+
+	transactionData := Model{}
+	if err := transaction.DataTo(&transactionData); err != nil {
+		return transactions.Domain{}, err
+	}
+
+	transactionData.Status = status
 	transactionData.UpdatedAt = time.Now()
 
 	_, err = transactionDoc.Set(tr.ctx, transactionData)

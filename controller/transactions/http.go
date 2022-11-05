@@ -102,3 +102,62 @@ func (transactionCtrl *TransactionController) UpdatePayment(c echo.Context) erro
 		"data":    transaction,
 	})
 }
+
+func (transactionCtrl *TransactionController) GetPaymentNotVerified(c echo.Context) error {
+	transactions, err := transactionCtrl.transactionUseCase.GetPaymentNotVerified()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success get payment not verified",
+		"data":    transactions,
+	})
+}
+
+func (transactionCtrl *TransactionController) GetTransactionOnVerification(c echo.Context) error {
+	transactionID := c.Param("transaction-id")
+
+	transaction, err := transactionCtrl.transactionUseCase.GetTransactionOnVerification(transactionID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success get payment on verification list",
+		"data":    transaction,
+	})
+}
+
+func (transactionCtrl *TransactionController) UpdateVerification(c echo.Context) error {
+	transactionID := c.Param("transaction-id")
+
+	userInput := request.Verification{}
+	if err := c.Bind(&userInput); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	if userInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "validation failed",
+		})
+	}
+
+	transaction, err := transactionCtrl.transactionUseCase.UpdateVerification(transactionID, userInput.Status)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success update verification",
+		"data":    transaction,
+	})
+}

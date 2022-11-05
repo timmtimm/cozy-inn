@@ -29,6 +29,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 
 	// multiple role
 	AllMiddleware := _middleware.RoleMiddleware{Role: []string{"user", "receptionist", "admin"}}
+	AdminReceptionistMiddleware := _middleware.RoleMiddleware{Role: []string{"receptionist", "admin"}}
 
 	e.GET("/api/v1/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
@@ -52,6 +53,9 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	transaction.GET("/", cl.TransactionController.GetAllTransaction, userMiddleware.CheckToken)
 	transaction.POST("/", cl.TransactionController.CreateTransaction, userMiddleware.CheckToken)
 	transaction.PUT("/:transaction-id", cl.TransactionController.UpdatePayment, userMiddleware.CheckToken)
+	transaction.GET("/verification", cl.TransactionController.GetPaymentNotVerified, AdminReceptionistMiddleware.CheckToken)
+	transaction.GET("/verification/:transaction-id", cl.TransactionController.GetTransactionOnVerification, AdminReceptionistMiddleware.CheckToken)
+	transaction.PUT("/verification/:transaction-id", cl.TransactionController.UpdateVerification, AdminReceptionistMiddleware.CheckToken)
 
 	admin := e.Group("/api/v1/admin", adminMiddleware.CheckToken)
 	admin.GET("/user-list", cl.UserController.GetUserList)
