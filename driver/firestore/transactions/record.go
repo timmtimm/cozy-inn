@@ -16,14 +16,15 @@ type Model struct {
 	CheckOut      time.Time `firestore:"checkOut,omitempty"`
 	Status        string    `firestore:"status"`
 	Bill          int       `firestore:"bill"`
-	PaymentProof  string    `firestore:"paymentProof,omitempty"`
+	Payment_URL   string    `firestore:"payment_URL,omitempty"`
 	CreatedAt     time.Time `firestore:"createdAt"`
 	UpdatedAt     time.Time `firestore:"updatedAt"`
 }
 
-func FromDomain(domain *transactions.Domain) *Model {
-	return &Model{
+func FromDomain(domain transactions.Domain) Model {
+	return Model{
 		TransactionID: domain.TransactionID,
+		UserEmail:     domain.UserEmail,
 		RoomType:      domain.RoomType,
 		RoomNumber:    domain.RoomNumber,
 		StartDate:     domain.StartDate,
@@ -32,6 +33,7 @@ func FromDomain(domain *transactions.Domain) *Model {
 		CheckOut:      domain.CheckOut,
 		Status:        domain.Status,
 		Bill:          domain.Bill,
+		Payment_URL:   domain.Payment_URL,
 		CreatedAt:     domain.CreatedAt,
 		UpdatedAt:     domain.UpdatedAt,
 	}
@@ -49,6 +51,7 @@ func (rec *Model) ToDomain() transactions.Domain {
 		CheckOut:      rec.CheckOut,
 		Status:        rec.Status,
 		Bill:          rec.Bill,
+		Payment_URL:   rec.Payment_URL,
 		CreatedAt:     rec.CreatedAt,
 		UpdatedAt:     rec.UpdatedAt,
 	}

@@ -16,7 +16,7 @@ type Transaction struct {
 	CheckOut      time.Time `json:"checkOut" firestore:"checkOut,omitempty"`
 	Status        string    `json:"status" validate:"required" firestore:"status"`
 	Bill          int       `json:"bill" validate:"required" firestore:"bill"`
-	PaymentProof  string    `json:"paymentProof" firestore:"paymentProof,omitempty"`
+	Payment_URL   string    `json:"payment_URL" firestore:"payment_URL,omitempty"`
 	CreatedAt     time.Time `json:"createdAt" firestore:"createdAt"`
 	UpdatedAt     time.Time `json:"updatedAt" firestore:"updatedAt"`
 }
@@ -33,7 +33,7 @@ func ToDomain(domain transactions.Domain) Transaction {
 		CheckOut:      domain.CheckOut,
 		Status:        domain.Status,
 		Bill:          domain.Bill,
-		PaymentProof:  domain.PaymentProof,
+		Payment_URL:   domain.Payment_URL,
 		CreatedAt:     domain.CreatedAt,
 		UpdatedAt:     domain.UpdatedAt,
 	}

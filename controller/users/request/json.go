@@ -15,8 +15,8 @@ type User struct {
 	Status      bool   `json:"status" firestore:"status"`
 }
 
-func (req *User) ToDomain() *users.Domain {
-	return &users.Domain{
+func (req *User) ToDomain() users.Domain {
+	return users.Domain{
 		Name:        req.Name,
 		Email:       req.Email,
 		Password:    req.Password,
@@ -37,8 +37,8 @@ type UserLogin struct {
 	Password string `json:"password" validate:"required" firestore:"password"`
 }
 
-func (req *UserLogin) ToDomain() *users.Domain {
-	return &users.Domain{
+func (req *UserLogin) ToDomain() users.Domain {
+	return users.Domain{
 		Email:    req.Email,
 		Password: req.Password,
 	}
@@ -55,8 +55,8 @@ type UserUpdate struct {
 	ImageID_URL string `json:"imageID_URL" validate:"required,url" firestore:"imageID_URL"`
 }
 
-func (req *UserUpdate) ToDomain() *users.Domain {
-	return &users.Domain{
+func (req *UserUpdate) ToDomain() users.Domain {
+	return users.Domain{
 		Name:        req.Name,
 		ImageID_URL: req.ImageID_URL,
 	}
@@ -73,8 +73,8 @@ type AdminUpdate struct {
 	Status bool   `json:"status" firestore:"status"`
 }
 
-func (req *AdminUpdate) ToDomain() *users.Domain {
-	return &users.Domain{
+func (req *AdminUpdate) ToDomain() users.Domain {
+	return users.Domain{
 		Role:   req.Role,
 		Status: req.Status,
 	}

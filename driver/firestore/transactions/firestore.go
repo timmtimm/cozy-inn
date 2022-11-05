@@ -5,7 +5,6 @@ import (
 	"cozy-inn/businesses/rooms"
 	"cozy-inn/businesses/transactions"
 	"errors"
-	"fmt"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -29,7 +28,7 @@ func (tr *TransactionRepository) transactionsCollection() *firestore.CollectionR
 	return tr.client.Collection("transactions")
 }
 
-func (tr *TransactionRepository) GetAllTransaction(email string) ([]transactions.Domain, error) {
+func (tr *TransactionRepository) GetAllTransactionByEmail(email string) ([]transactions.Domain, error) {
 	transactionList := []transactions.Domain{}
 	transactionDoc := tr.transactionsCollection().Where("userEmail", "==", email)
 
@@ -51,7 +50,82 @@ func (tr *TransactionRepository) GetAllTransaction(email string) ([]transactions
 	return transactionList, nil
 }
 
-func (tr *TransactionRepository) GetFinishedTransactionByRoom(roomType string, startDate time.Time, roomNumber int) ([]transactions.Domain, error) {
+func (tr *TransactionRepository) GetAllReadyCheckIn() ([]transactions.Domain, error) {
+	transactionList := []transactions.Domain{}
+	transactionDoc := tr.transactionsCollection().Where("status", "==", "verified")
+
+	iter := transactionDoc.Documents(tr.ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transaction := transactions.Domain{}
+		if err := doc.DataTo(&transaction); err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transactionList = append(transactionList, transaction)
+	}
+
+	return transactionList, nil
+}
+
+func (tr *TransactionRepository) GetAllReadyCheckOut() ([]transactions.Domain, error) {
+	transactionList := []transactions.Domain{}
+	transactionDoc := tr.transactionsCollection().Where("status", "==", "checked-in")
+
+	iter := transactionDoc.Documents(tr.ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transaction := transactions.Domain{}
+		if err := doc.DataTo(&transaction); err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transactionList = append(transactionList, transaction)
+	}
+
+	return transactionList, nil
+}
+
+func (tr *TransactionRepository) GetAllPaymentNotVerified() ([]transactions.Domain, error) {
+	transactionList := []transactions.Domain{}
+	transactionDoc := tr.transactionsCollection().Where("status", "==", "verification-pending")
+
+	iter := transactionDoc.Documents(tr.ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transaction := transactions.Domain{}
+		if err := doc.DataTo(&transaction); err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transactionList = append(transactionList, transaction)
+	}
+
+	return transactionList, nil
+}
+
+func (tr *TransactionRepository) GetTransactionByRoomAndEndDate(roomType string, startDate time.Time, roomNumber int) ([]transactions.Domain, error) {
 	transactionList := []transactions.Domain{}
 	transactionDoc := tr.transactionsCollection().Where("roomType", "==", roomType).Where("roomNumber", "==", roomNumber).Where("endDate", ">=", startDate).Where("status", "in", []string{"paid", "unpaid"})
 
@@ -76,21 +150,22 @@ func (tr *TransactionRepository) GetFinishedTransactionByRoom(roomType string, s
 	return transactionList, nil
 }
 
-func (tr *TransactionRepository) CreateTransaction(email string, transactionDomain *transactions.Domain, RoomData rooms.Domain) (transactions.Domain, error) {
-	rec := FromDomain(transactionDomain)
+func (tr *TransactionRepository) GetTransactionByID(transactionID string) (transactions.Domain, error) {
+	transactionDoc, err := tr.transactionsCollection().Doc(transactionID).Get(tr.ctx)
+	if err != nil {
+		return transactions.Domain{}, errors.New("transaction not found")
+	}
 
-	rec.UserEmail = email
-	rec.CreatedAt = time.Now()
-	rec.UpdatedAt = rec.CreatedAt
+	transaction := transactions.Domain{}
+	if err := transactionDoc.DataTo(&transaction); err != nil {
+		return transactions.Domain{}, err
+	}
 
-	rec.StartDate = time.Date(rec.StartDate.Year(), rec.StartDate.Month(), rec.StartDate.Day(), 0, 0, 0, 0, time.UTC)
-	rec.EndDate = time.Date(rec.EndDate.Year(), rec.EndDate.Month(), rec.EndDate.Day(), 0, 0, 0, 0, time.UTC)
+	return transaction, nil
+}
 
-	rec.Bill = RoomData.Price * int(rec.EndDate.Sub(rec.StartDate).Hours()/24)
-	rec.Status = "unpaid"
-
-	timeToString, _ := rec.CreatedAt.UTC().MarshalText()
-	rec.TransactionID = fmt.Sprintf("%s_%s", timeToString, email)
+func (tr *TransactionRepository) Create(email string, transactionInput transactions.Domain, RoomData rooms.Domain) (transactions.Domain, error) {
+	rec := FromDomain(transactionInput)
 
 	_, err := tr.transactionsCollection().Doc(rec.TransactionID).Set(tr.ctx, Model{
 		TransactionID: rec.TransactionID,
@@ -105,8 +180,28 @@ func (tr *TransactionRepository) CreateTransaction(email string, transactionDoma
 		UpdatedAt:     rec.UpdatedAt,
 	})
 	if err != nil {
-		return transactions.Domain{}, errors.New("i miss her")
+		return transactions.Domain{}, err
 	}
 
 	return rec.ToDomain(), nil
+}
+
+func (tr *TransactionRepository) Update(transcationID string, transactionInput transactions.Domain) error {
+	rec := FromDomain(transactionInput)
+
+	_, err := tr.transactionsCollection().Doc(transcationID).Set(tr.ctx, rec)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (tr *TransactionRepository) Delete(transactionID string) error {
+	_, err := tr.transactionsCollection().Doc(transactionID).Delete(tr.ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
