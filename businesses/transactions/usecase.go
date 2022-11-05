@@ -40,7 +40,7 @@ func (tu *TransactionUseCase) CreateTransaction(email string, transactionDomain 
 		}
 	}
 
-	transactionList, err := tu.transactionRepository.GetFinishedTransactionByRoom(
+	transactionList, err := tu.transactionRepository.GetTransactionByRoomAndDate(
 		transactionDomain.RoomType,
 		transactionDomain.StartDate,
 		transactionDomain.RoomNumber)
@@ -62,6 +62,15 @@ func (tu *TransactionUseCase) CreateTransaction(email string, transactionDomain 
 	}
 
 	transaction, err := tu.transactionRepository.CreateTransaction(email, transactionDomain, RoomData)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	return transaction, nil
+}
+
+func (tu *TransactionUseCase) UpdatePayment(transactionID string, payment_URL string) (Domain, error) {
+	transaction, err := tu.transactionRepository.UpdatePayment(transactionID, payment_URL)
 	if err != nil {
 		return Domain{}, err
 	}
