@@ -3,6 +3,7 @@ package users
 import (
 	"cozy-inn/app/middleware"
 	"errors"
+	"time"
 )
 
 type UserUseCase struct {
@@ -17,88 +18,8 @@ func NewUserUsecase(ur Repository, jwtAuth *middleware.ConfigJWT) UseCase {
 	}
 }
 
-func (uu *UserUseCase) Register(userDomain *Domain) (string, error) {
-	err := uu.userRepository.Register(userDomain)
-
-	if err != nil {
-		return "", err
-	}
-
-	token := uu.jwtAuth.GenerateToken(userDomain.Email, userDomain.Role)
-	return token, nil
-}
-
-func (uu *UserUseCase) SudoRegister(userDomain *Domain) error {
-	avaliableRoles := []string{"user", "receptionist"}
-	found := false
-	for _, avaliableRole := range avaliableRoles {
-		if userDomain.Role == avaliableRole {
-			found = true
-		}
-	}
-
-	if !found {
-		return errors.New("invalid role")
-	}
-
-	err := uu.userRepository.Register(userDomain)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (uu *UserUseCase) Login(userDomain *Domain) (string, error) {
-	if err := uu.userRepository.Login(userDomain); err != nil {
-		return "", err
-	}
-
-	userData, err := uu.userRepository.GetUserByEmail(userDomain.Email)
-	if err != nil {
-		return "", err
-	}
-
-	token := uu.jwtAuth.GenerateToken(userData.Email, userData.Role)
-	return token, nil
-}
-
 func (uu *UserUseCase) GetUserByEmail(email string) (Domain, error) {
 	user, err := uu.userRepository.GetUserByEmail(email)
-	if err != nil {
-		return Domain{}, err
-	}
-
-	return user, nil
-}
-
-func (uu *UserUseCase) AdminUpdateUser(email string, userDomain *Domain) (Domain, error) {
-	avaliableRoles := []string{"user", "receptionist"}
-	found := false
-	for _, avaliableRole := range avaliableRoles {
-		if userDomain.Role == avaliableRole {
-			found = true
-		}
-	}
-
-	if !found {
-		return Domain{}, errors.New("invalid role")
-	}
-
-	if userDomain.Role == "admin" {
-		return Domain{}, errors.New("can't change role to admin")
-	}
-
-	user, err := uu.userRepository.AdminUpdateUser(email, userDomain)
-	if err != nil {
-		return Domain{}, err
-	}
-
-	return user, nil
-}
-
-func (uu *UserUseCase) UpdateUser(email string, userDomain *Domain) (Domain, error) {
-	user, err := uu.userRepository.Update(email, userDomain)
 	if err != nil {
 		return Domain{}, err
 	}
@@ -115,7 +36,105 @@ func (uu *UserUseCase) GetUserList() ([]Domain, error) {
 	return users, nil
 }
 
-func (uu *UserUseCase) AdminDeleteUser(email string) error {
+func (uu *UserUseCase) UserRegister(userInput Domain) (string, error) {
+	err := uu.userRepository.Register(userInput)
+
+	if err != nil {
+		return "", err
+	}
+
+	token := uu.jwtAuth.GenerateToken(userInput.Email, userInput.Role)
+	return token, nil
+}
+
+func (uu *UserUseCase) AdminRegister(userInput Domain) error {
+	avaliableRoles := []string{"user", "receptionist"}
+	found := false
+	for _, avaliableRole := range avaliableRoles {
+		if userInput.Role == avaliableRole {
+			found = true
+		}
+	}
+
+	if !found {
+		return errors.New("invalid role")
+	}
+
+	err := uu.userRepository.Register(userInput)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (uu *UserUseCase) Login(userInput Domain) (string, error) {
+	if err := uu.userRepository.Login(userInput); err != nil {
+		return "", err
+	}
+
+	userData, err := uu.userRepository.GetUserByEmail(userInput.Email)
+	if err != nil {
+		return "", err
+	}
+
+	token := uu.jwtAuth.GenerateToken(userData.Email, userData.Role)
+	return token, nil
+}
+
+func (uu *UserUseCase) UserUpdate(email string, userInput Domain) (Domain, error) {
+	user, err := uu.userRepository.GetUserByEmail(email)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	user.Name = userInput.Name
+	user.ImageID_URL = userInput.ImageID_URL
+	user.UpdatedAt = time.Now()
+
+	err = uu.userRepository.Update(email, user)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	return user, nil
+}
+
+func (uu *UserUseCase) AdminUpdate(email string, userInput Domain) (Domain, error) {
+	avaliableRoles := []string{"user", "receptionist"}
+	found := false
+	for _, avaliableRole := range avaliableRoles {
+		if userInput.Role == avaliableRole {
+			found = true
+		}
+	}
+
+	if !found {
+		return Domain{}, errors.New("invalid role")
+	}
+
+	if userInput.Role == "admin" {
+		return Domain{}, errors.New("can't change role to admin")
+	}
+
+	user, err := uu.userRepository.GetUserByEmail(email)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	user.Role = userInput.Role
+	user.Status = userInput.Status
+	user.UpdatedAt = time.Now()
+
+	err = uu.userRepository.Update(email, user)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	return user, nil
+}
+
+func (uu *UserUseCase) AdminDelete(email string) error {
 	err := uu.userRepository.Delete(email)
 	if err != nil {
 		return err

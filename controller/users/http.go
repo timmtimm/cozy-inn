@@ -37,8 +37,7 @@ func (userCtrl *UserController) UserRegister(c echo.Context) error {
 		})
 	}
 
-	token, err := userCtrl.userUseCase.Register(userInput.ToDomain())
-
+	token, err := userCtrl.userUseCase.UserRegister(userInput.ToDomain())
 	if err != nil {
 		return c.JSON(http.StatusConflict, map[string]string{
 			"message": err.Error(),
@@ -51,38 +50,8 @@ func (userCtrl *UserController) UserRegister(c echo.Context) error {
 	})
 }
 
-func (userCtrl *UserController) AdminRegister(c echo.Context) error {
-	userInput := request.User{}
-
-	if c.Bind(&userInput) != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "invalid request",
-		})
-	}
-
-	userInput.Status = true
-	if userInput.Validate() != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "validation failed",
-		})
-	}
-
-	err := userCtrl.userUseCase.SudoRegister(userInput.ToDomain())
-
-	if err != nil {
-		return c.JSON(http.StatusConflict, map[string]string{
-			"message": err.Error(),
-		})
-	}
-
-	return c.JSON(http.StatusCreated, map[string]string{
-		"message": "success to register",
-	})
-}
-
 func (userCtrl *UserController) Login(c echo.Context) error {
 	userInput := request.UserLogin{}
-
 	if c.Bind(&userInput) != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"message": "invalid request",
@@ -96,7 +65,6 @@ func (userCtrl *UserController) Login(c echo.Context) error {
 	}
 
 	token, err := userCtrl.userUseCase.Login(userInput.ToDomain())
-
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"message": err.Error(),
@@ -106,20 +74,6 @@ func (userCtrl *UserController) Login(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{
 		"message": "success to login",
 		"token":   token,
-	})
-}
-
-func (userCtrl *UserController) GetUserList(c echo.Context) error {
-	userList, err := userCtrl.userUseCase.GetUserList()
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": err.Error(),
-		})
-	}
-
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": "success to get user list",
-		"user":    userList,
 	})
 }
 
@@ -144,7 +98,82 @@ func (userCtrl *UserController) GetUserProfile(c echo.Context) error {
 	})
 }
 
-func (userCtrl *UserController) AdminGetUserProfile(c echo.Context) error {
+func (userCtrl *UserController) UpdateUserProfile(c echo.Context) error {
+	email, err := middleware.GetEmailByToken(c)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	userInput := request.UserUpdate{}
+	if c.Bind(&userInput) != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	if userInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "required filled form is invalid",
+		})
+	}
+
+	user, err := userCtrl.userUseCase.UserUpdate(email, userInput.ToDomain())
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success to update user profile",
+		"user":    response.FromDomain(user),
+	})
+}
+
+func (userCtrl *UserController) AdminGetUserList(c echo.Context) error {
+	userList, err := userCtrl.userUseCase.GetUserList()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success to get user list",
+		"user":    userList,
+	})
+}
+
+func (userCtrl *UserController) AdminRegister(c echo.Context) error {
+	userInput := request.User{}
+	if c.Bind(&userInput) != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	userInput.Status = true
+	if userInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "validation failed",
+		})
+	}
+
+	err := userCtrl.userUseCase.AdminRegister(userInput.ToDomain())
+	if err != nil {
+		return c.JSON(http.StatusConflict, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusCreated, map[string]string{
+		"message": "success to register",
+	})
+}
+
+func (userCtrl *UserController) AdminGetUser(c echo.Context) error {
 	userEmail := c.Param("user-email")
 
 	user, err := userCtrl.userUseCase.GetUserByEmail(userEmail)
@@ -160,7 +189,7 @@ func (userCtrl *UserController) AdminGetUserProfile(c echo.Context) error {
 	})
 }
 
-func (userCtrl *UserController) AdminUpdateUser(c echo.Context) error {
+func (userCtrl *UserController) AdminUpdate(c echo.Context) error {
 	userEmail := c.Param("user-email")
 
 	userInput := request.AdminUpdate{}
@@ -176,7 +205,7 @@ func (userCtrl *UserController) AdminUpdateUser(c echo.Context) error {
 		})
 	}
 
-	user, err := userCtrl.userUseCase.AdminUpdateUser(userEmail, userInput.ToDomain())
+	user, err := userCtrl.userUseCase.AdminUpdate(userEmail, userInput.ToDomain())
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"message": err.Error(),
@@ -189,46 +218,10 @@ func (userCtrl *UserController) AdminUpdateUser(c echo.Context) error {
 	})
 }
 
-func (userCtrl *UserController) UpdateUserProfile(c echo.Context) error {
-	email, err := middleware.GetEmailByToken(c)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": err.Error(),
-		})
-	}
-
-	userInput := request.UserUpdate{}
-
-	if c.Bind(&userInput) != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "invalid request",
-		})
-	}
-
-	if userInput.Validate() != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "required filled form is invalid",
-		})
-	}
-
-	user, err := userCtrl.userUseCase.UpdateUser(email, userInput.ToDomain())
-
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": err.Error(),
-		})
-	}
-
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": "success to update user profile",
-		"user":    response.FromDomain(user),
-	})
-}
-
-func (userCtrl *UserController) AdminDeleteUser(c echo.Context) error {
+func (userCtrl *UserController) AdminDelete(c echo.Context) error {
 	userEmail := c.Param("user-email")
 
-	err := userCtrl.userUseCase.AdminDeleteUser(userEmail)
+	err := userCtrl.userUseCase.AdminDelete(userEmail)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"message": err.Error(),

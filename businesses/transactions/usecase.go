@@ -19,9 +19,8 @@ func NewTransactionUsecase(rr Repository, RoomRepository rooms.Repository) UseCa
 	}
 }
 
-func (tu *TransactionUseCase) GetAllTransaction(email string) ([]Domain, error) {
-	transactions, err := tu.transactionRepository.GetAllTransaction(email)
-
+func (tu *TransactionUseCase) GetAllTransactionUser(email string) ([]Domain, error) {
+	transactions, err := tu.transactionRepository.GetAllTransactionByEmail(email)
 	if err != nil {
 		return []Domain{}, err
 	}
@@ -29,67 +28,26 @@ func (tu *TransactionUseCase) GetAllTransaction(email string) ([]Domain, error) 
 	return transactions, nil
 }
 
-func (tu *TransactionUseCase) CreateTransaction(email string, transactionDomain *Domain) (Domain, error) {
-	RoomData, err := tu.RoomRepository.GetRoomByType(transactionDomain.RoomType)
+func (tu *TransactionUseCase) GetAllReadyCheckIn() ([]Domain, error) {
+	transactions, err := tu.transactionRepository.GetAllReadyCheckIn()
 	if err != nil {
-		return Domain{}, err
+		return []Domain{}, err
 	}
 
-	for _, room := range RoomData.Room {
-		if room.Number == transactionDomain.RoomNumber && room.Status != "available" {
-			return Domain{}, errors.New("room is not available1")
-		}
-	}
-
-	transactionList, err := tu.transactionRepository.GetTransactionByRoomAndDate(
-		transactionDomain.RoomType,
-		transactionDomain.StartDate,
-		transactionDomain.RoomNumber)
-	if err != nil {
-		return Domain{}, err
-	}
-
-	for _, transaction := range transactionList {
-		// start date between input end date and input start date
-		fmt.Println(transaction)
-		if transaction.StartDate.Before(transactionDomain.EndDate) && transaction.StartDate.After(transactionDomain.StartDate) {
-			return Domain{}, errors.New("room is not available2")
-		}
-
-		// end date between input end date and input start date
-		if transaction.EndDate.Before(transactionDomain.EndDate) && transaction.EndDate.After(transactionDomain.StartDate) {
-			return Domain{}, errors.New("room is not available3")
-		}
-	}
-
-	transaction, err := tu.transactionRepository.CreateTransaction(email, transactionDomain, RoomData)
-	if err != nil {
-		return Domain{}, err
-	}
-
-	return transaction, nil
+	return transactions, nil
 }
 
-func (tu *TransactionUseCase) UpdatePayment(transactionID string, payment_URL string) (Domain, error) {
-	check, err := tu.transactionRepository.GetTransactionOnVerification(transactionID)
+func (tu *TransactionUseCase) GetAllReadyCheckOut() ([]Domain, error) {
+	transactions, err := tu.transactionRepository.GetAllReadyCheckOut()
 	if err != nil {
-		return Domain{}, err
+		return []Domain{}, err
 	}
 
-	if check.Status != "verification-pending" {
-		return Domain{}, fmt.Errorf("transaction is %s", check.Status)
-	}
-
-	transaction, err := tu.transactionRepository.UpdatePayment(transactionID, payment_URL)
-	if err != nil {
-		return Domain{}, err
-	}
-
-	return transaction, nil
+	return transactions, nil
 }
 
-func (tu *TransactionUseCase) GetPaymentNotVerified() ([]Domain, error) {
-	transactions, err := tu.transactionRepository.GetPaymentNotVerified()
+func (tu *TransactionUseCase) GetAllPaymentNotVerified() ([]Domain, error) {
+	transactions, err := tu.transactionRepository.GetAllPaymentNotVerified()
 	if err != nil {
 		return []Domain{}, err
 	}
@@ -98,7 +56,7 @@ func (tu *TransactionUseCase) GetPaymentNotVerified() ([]Domain, error) {
 }
 
 func (tu *TransactionUseCase) GetTransactionOnVerification(transactionID string) (Domain, error) {
-	transaction, err := tu.transactionRepository.GetTransactionOnVerification(transactionID)
+	transaction, err := tu.transactionRepository.GetTransactionByID(transactionID)
 	if err != nil {
 		return Domain{}, err
 	}
@@ -110,14 +68,126 @@ func (tu *TransactionUseCase) GetTransactionOnVerification(transactionID string)
 	return transaction, nil
 }
 
-func (tu *TransactionUseCase) UpdateVerification(transactionID string, status string) (Domain, error) {
-	check, err := tu.transactionRepository.GetTransactionOnVerification(transactionID)
+func (tu *TransactionUseCase) GetCheckInTransaction(transactionID string) (Domain, error) {
+	transaction, err := tu.transactionRepository.GetTransactionByID(transactionID)
 	if err != nil {
 		return Domain{}, err
 	}
 
-	if check.Status != "verification-pending" {
-		return Domain{}, fmt.Errorf("transaction is %s", check.Status)
+	if transaction.Status != "verified" {
+		return Domain{}, fmt.Errorf("transaction is %s", transaction.Status)
+	}
+
+	return transaction, nil
+}
+
+func (tu *TransactionUseCase) GetCheckOutTransaction(transactionID string) (Domain, error) {
+	transaction, err := tu.transactionRepository.GetTransactionByID(transactionID)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	if transaction.Status != "checked-in" {
+		return Domain{}, fmt.Errorf("transaction is on %s", transaction.Status)
+	}
+
+	return transaction, nil
+}
+
+func (tu *TransactionUseCase) GetTransaction(transactionID string) (Domain, error) {
+	transaction, err := tu.transactionRepository.GetTransactionByID(transactionID)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	return transaction, nil
+}
+
+func (tu *TransactionUseCase) CreateTransaction(email string, transactionInput Domain) (Domain, error) {
+	RoomData, err := tu.RoomRepository.GetRoomByType(transactionInput.RoomType)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	for _, room := range RoomData.Room {
+		if room.Number == transactionInput.RoomNumber && room.Status != "available" {
+			return Domain{}, errors.New("room is not available")
+		}
+	}
+
+	transactionList, err := tu.transactionRepository.GetTransactionByRoomAndEndDate(
+		transactionInput.RoomType,
+		transactionInput.StartDate,
+		transactionInput.RoomNumber)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	for _, transaction := range transactionList {
+		// start date between input end date and input start date
+		if transaction.StartDate.Before(transactionInput.EndDate) && transaction.StartDate.After(transactionInput.StartDate) {
+			return Domain{}, errors.New("room is not available")
+		}
+
+		// end date between input end date and input start date
+		if transaction.EndDate.Before(transactionInput.EndDate) && transaction.EndDate.After(transactionInput.StartDate) {
+			return Domain{}, errors.New("room is not available")
+		}
+	}
+
+	transactionInput.UserEmail = email
+	transactionInput.StartDate = time.Date(transactionInput.StartDate.Year(), transactionInput.StartDate.Month(), transactionInput.StartDate.Day(), 0, 0, 0, 0, time.UTC)
+	transactionInput.EndDate = time.Date(transactionInput.EndDate.Year(), transactionInput.EndDate.Month(), transactionInput.EndDate.Day(), 0, 0, 0, 0, time.UTC)
+	transactionInput.Status = "unpaid"
+	transactionInput.Bill = RoomData.Price * int(transactionInput.EndDate.Sub(transactionInput.StartDate).Hours()/24)
+	transactionInput.CreatedAt = time.Now()
+	transactionInput.UpdatedAt = transactionInput.CreatedAt
+
+	timeToString, _ := transactionInput.CreatedAt.UTC().MarshalText()
+	transactionInput.TransactionID = fmt.Sprintf("%s_%s", timeToString, email)
+
+	transaction, err := tu.transactionRepository.Create(email, transactionInput, RoomData)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	return transaction, nil
+}
+
+func (tu *TransactionUseCase) UpdatePayment(transactionID string, email string, payment_URL string) (Domain, error) {
+	transaction, err := tu.transactionRepository.GetTransactionByID(transactionID)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	if email != transaction.UserEmail {
+		return Domain{}, errors.New("transaction not found")
+	}
+
+	if transaction.Status != "unpaid" {
+		return Domain{}, fmt.Errorf("transaction is %s", transaction.Status)
+	}
+
+	transaction.Status = "verification-pending"
+	transaction.Payment_URL = payment_URL
+	transaction.UpdatedAt = time.Now()
+
+	err = tu.transactionRepository.Update(transactionID, transaction)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	return transaction, nil
+}
+
+func (tu *TransactionUseCase) UpdateVerification(transactionID string, status string) (Domain, error) {
+	transaction, err := tu.transactionRepository.GetTransactionByID(transactionID)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	if transaction.Status != "verification-pending" {
+		return Domain{}, fmt.Errorf("transaction is %s", transaction.Status)
 	}
 
 	statusList := []string{"verified", "rejected"}
@@ -132,7 +202,10 @@ func (tu *TransactionUseCase) UpdateVerification(transactionID string, status st
 		return Domain{}, errors.New("invalid status")
 	}
 
-	transaction, err := tu.transactionRepository.UpdateVerification(transactionID, status)
+	transaction.Status = status
+	transaction.UpdatedAt = time.Now()
+
+	err = tu.transactionRepository.Update(transactionID, transaction)
 	if err != nil {
 		return Domain{}, err
 	}
@@ -140,17 +213,8 @@ func (tu *TransactionUseCase) UpdateVerification(transactionID string, status st
 	return transaction, nil
 }
 
-func (tu *TransactionUseCase) GetAllCheckIn() ([]Domain, error) {
-	transactions, err := tu.transactionRepository.GetAllCheckIn()
-	if err != nil {
-		return []Domain{}, err
-	}
-
-	return transactions, nil
-}
-
-func (tu *TransactionUseCase) GetCheckInTransaction(transactionID string) (Domain, error) {
-	transaction, err := tu.transactionRepository.GetCheckInTransaction(transactionID)
+func (tu *TransactionUseCase) UpdateCheckIn(transactionID string) (Domain, error) {
+	transaction, err := tu.transactionRepository.GetTransactionByID(transactionID)
 	if err != nil {
 		return Domain{}, err
 	}
@@ -159,44 +223,13 @@ func (tu *TransactionUseCase) GetCheckInTransaction(transactionID string) (Domai
 		return Domain{}, fmt.Errorf("transaction is %s", transaction.Status)
 	}
 
-	return transaction, nil
-}
+	transaction.Status = "checked-in"
+	transaction.CheckIn = time.Now()
+	transaction.UpdatedAt = transaction.CheckIn
 
-func (tu *TransactionUseCase) UpdateCheckIn(transactionID string) (Domain, error) {
-	check, err := tu.transactionRepository.GetCheckInTransaction(transactionID)
+	err = tu.transactionRepository.Update(transactionID, transaction)
 	if err != nil {
 		return Domain{}, err
-	}
-
-	if check.Status != "verified" {
-		return Domain{}, fmt.Errorf("transaction is %s", check.Status)
-	}
-
-	transaction, err := tu.transactionRepository.UpdateCheckIn(transactionID)
-	if err != nil {
-		return Domain{}, err
-	}
-
-	return transaction, nil
-}
-
-func (tu *TransactionUseCase) GetAllCheckOut() ([]Domain, error) {
-	transactions, err := tu.transactionRepository.GetAllCheckOut()
-	if err != nil {
-		return []Domain{}, err
-	}
-
-	return transactions, nil
-}
-
-func (tu *TransactionUseCase) GetCheckOutTransaction(transactionID string) (Domain, error) {
-	transaction, err := tu.transactionRepository.GetTransactionByID(transactionID)
-	if err != nil {
-		return Domain{}, err
-	}
-
-	if transaction.Status != "checked-in" {
-		return Domain{}, fmt.Errorf("transaction is on %s", transaction.Status)
 	}
 
 	return transaction, nil
@@ -224,7 +257,7 @@ func (tu *TransactionUseCase) UpdateCheckOut(transactionID string) (Domain, erro
 	return transaction, nil
 }
 
-func (tu *TransactionUseCase) DeleteTransaction(transactionID string) error {
+func (tu *TransactionUseCase) AdminDeleteTransaction(transactionID string) error {
 	_, err := tu.transactionRepository.GetTransactionByID(transactionID)
 	if err != nil {
 		return err

@@ -6,28 +6,28 @@ import (
 )
 
 type Model struct {
-	RoomType       string                `firestore:"roomType"`
-	Room           []rooms.RoomCondition `firestore:"room"`
-	Description    string                `firestore:"description"`
-	ImageRoom_URLS []string              `firestore:"imageRoom_URLS"`
-	Rules          []string              `firestore:"rules"`
-	Facilities     []string              `firestore:"facilities"`
-	Capacity       int                   `firestore:"capacity"`
-	Price          int                   `firestore:"price"`
-	CreatedAt      time.Time             `firestore:"createdAt"`
-	UpdatedAt      time.Time             `firestore:"updatedAt"`
+	RoomType       string       `firestore:"roomType"`
+	Room           []rooms.Room `firestore:"room"`
+	Description    string       `firestore:"description"`
+	ImageRoom_URLS []string     `firestore:"imageRoom_URLS"`
+	Capacity       int          `firestore:"capacity"`
+	Price          int          `firestore:"price"`
+	Facilities     []string     `firestore:"facilities"`
+	Rules          []string     `firestore:"rules"`
+	CreatedAt      time.Time    `firestore:"createdAt"`
+	UpdatedAt      time.Time    `firestore:"updatedAt"`
 }
 
-func FromDomain(domain *rooms.Domain) *Model {
-	return &Model{
+func FromDomain(domain rooms.Domain) Model {
+	return Model{
 		RoomType:       domain.RoomType,
 		Room:           domain.Room,
 		Description:    domain.Description,
 		ImageRoom_URLS: domain.ImageRoom_URLS,
-		Rules:          domain.Rules,
-		Facilities:     domain.Facilities,
 		Capacity:       domain.Capacity,
 		Price:          domain.Price,
+		Facilities:     domain.Facilities,
+		Rules:          domain.Rules,
 		CreatedAt:      domain.CreatedAt,
 		UpdatedAt:      domain.UpdatedAt,
 	}
@@ -39,10 +39,10 @@ func (rec *Model) ToDomain() rooms.Domain {
 		Room:           rec.Room,
 		Description:    rec.Description,
 		ImageRoom_URLS: rec.ImageRoom_URLS,
-		Rules:          rec.Rules,
-		Facilities:     rec.Facilities,
 		Capacity:       rec.Capacity,
 		Price:          rec.Price,
+		Facilities:     rec.Facilities,
+		Rules:          rec.Rules,
 		CreatedAt:      rec.CreatedAt,
 		UpdatedAt:      rec.UpdatedAt,
 	}

@@ -21,9 +21,10 @@ type Model struct {
 	UpdatedAt     time.Time `firestore:"updatedAt"`
 }
 
-func FromDomain(domain *transactions.Domain) *Model {
-	return &Model{
+func FromDomain(domain transactions.Domain) Model {
+	return Model{
 		TransactionID: domain.TransactionID,
+		UserEmail:     domain.UserEmail,
 		RoomType:      domain.RoomType,
 		RoomNumber:    domain.RoomNumber,
 		StartDate:     domain.StartDate,
