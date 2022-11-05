@@ -75,4 +75,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	admin.POST("/room", cl.RoomController.CreateRoom)
 	admin.DELETE("/room/:room-type", cl.RoomController.DeleteRoom)
 	admin.GET("/transaction", cl.TransactionController.AdminGetAllTransaction)
+	admin.GET("/transaction/:transaction-id", cl.TransactionController.AdminGetTransaction)
+	// admin.PUT("/transaction/:transaction-id", cl.TransactionController.AdminUpdateTransaction)
+	// admin.DELETE("/transaction/:transaction-id", cl.TransactionController.AdminDeleteTransaction)
 }
