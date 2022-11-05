@@ -4,6 +4,7 @@ import (
 	"cozy-inn/businesses/rooms"
 	"errors"
 	"fmt"
+	"time"
 )
 
 type TransactionUseCase struct {
@@ -70,6 +71,15 @@ func (tu *TransactionUseCase) CreateTransaction(email string, transactionDomain 
 }
 
 func (tu *TransactionUseCase) UpdatePayment(transactionID string, payment_URL string) (Domain, error) {
+	check, err := tu.transactionRepository.GetTransactionOnVerification(transactionID)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	if check.Status != "verification-pending" {
+		return Domain{}, fmt.Errorf("transaction is %s", check.Status)
+	}
+
 	transaction, err := tu.transactionRepository.UpdatePayment(transactionID, payment_URL)
 	if err != nil {
 		return Domain{}, err
@@ -94,7 +104,7 @@ func (tu *TransactionUseCase) GetTransactionOnVerification(transactionID string)
 	}
 
 	if transaction.Status != "verification-pending" {
-		return Domain{}, errors.New("transaction is not on verification")
+		return Domain{}, fmt.Errorf("transaction is %s", transaction.Status)
 	}
 
 	return transaction, nil
@@ -107,7 +117,7 @@ func (tu *TransactionUseCase) UpdateVerification(transactionID string, status st
 	}
 
 	if check.Status != "verification-pending" {
-		return Domain{}, errors.New("transaction is not on verification")
+		return Domain{}, fmt.Errorf("transaction is %s", check.Status)
 	}
 
 	statusList := []string{"verified", "rejected"}
@@ -146,7 +156,7 @@ func (tu *TransactionUseCase) GetCheckInTransaction(transactionID string) (Domai
 	}
 
 	if transaction.Status != "verified" {
-		return Domain{}, errors.New("transaction is not check in ready")
+		return Domain{}, fmt.Errorf("transaction is %s", transaction.Status)
 	}
 
 	return transaction, nil
@@ -158,15 +168,55 @@ func (tu *TransactionUseCase) UpdateCheckIn(transactionID string) (Domain, error
 		return Domain{}, err
 	}
 
-	if check.Status == "checked-in" {
-		return Domain{}, errors.New("transaction is already checked in")
-	} else if check.Status == "done" {
-		return Domain{}, errors.New("transaction already done")
-	} else if check.Status != "verified" {
-		return Domain{}, errors.New("transaction is not verified")
+	if check.Status != "verified" {
+		return Domain{}, fmt.Errorf("transaction is %s", check.Status)
 	}
 
 	transaction, err := tu.transactionRepository.UpdateCheckIn(transactionID)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	return transaction, nil
+}
+
+func (tu *TransactionUseCase) GetAllCheckOut() ([]Domain, error) {
+	transactions, err := tu.transactionRepository.GetAllCheckOut()
+	if err != nil {
+		return []Domain{}, err
+	}
+
+	return transactions, nil
+}
+
+func (tu *TransactionUseCase) GetCheckOutTransaction(transactionID string) (Domain, error) {
+	transaction, err := tu.transactionRepository.GetTransactionByID(transactionID)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	if transaction.Status != "checked-in" {
+		return Domain{}, fmt.Errorf("transaction is on %s", transaction.Status)
+	}
+
+	return transaction, nil
+}
+
+func (tu *TransactionUseCase) UpdateCheckOut(transactionID string) (Domain, error) {
+	transaction, err := tu.transactionRepository.GetTransactionByID(transactionID)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	if transaction.Status != "checked-in" {
+		return Domain{}, fmt.Errorf("transaction is on %s", transaction.Status)
+	}
+
+	transaction.Status = "done"
+	transaction.CheckOut = time.Now()
+	transaction.UpdatedAt = transaction.CheckOut
+
+	err = tu.transactionRepository.Update(transactionID, transaction)
 	if err != nil {
 		return Domain{}, err
 	}

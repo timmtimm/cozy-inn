@@ -207,3 +207,49 @@ func (transactionCtrl *TransactionController) CheckInTransaction(c echo.Context)
 		"data":    transaction,
 	})
 }
+
+func (transactionCtrl *TransactionController) GetAllCheckOut(c echo.Context) error {
+	transactions, err := transactionCtrl.transactionUseCase.GetAllCheckOut()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": "failed to get all check out",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success get all check out",
+		"data":    transactions,
+	})
+}
+
+func (transactionCtrl *TransactionController) GetCheckOutTransaction(c echo.Context) error {
+	transactionID := c.Param("transaction-id")
+
+	transaction, err := transactionCtrl.transactionUseCase.GetCheckOutTransaction(transactionID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success get payment on check out list",
+		"data":    transaction,
+	})
+}
+
+func (transactionCtrl *TransactionController) CheckOutTransaction(c echo.Context) error {
+	transactionID := c.Param("transaction-id")
+
+	transaction, err := transactionCtrl.transactionUseCase.UpdateCheckOut(transactionID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success update check out",
+		"data":    transaction,
+	})
+}

@@ -274,3 +274,37 @@ func (tr *TransactionRepository) UpdateCheckIn(transactionID string) (transactio
 
 	return transactionData.ToDomain(), nil
 }
+
+func (tr *TransactionRepository) GetAllCheckOut() ([]transactions.Domain, error) {
+	transactionList := []transactions.Domain{}
+	transactionDoc := tr.transactionsCollection().Where("status", "==", "checked-in")
+
+	iter := transactionDoc.Documents(tr.ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transaction := transactions.Domain{}
+		if err := doc.DataTo(&transaction); err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transactionList = append(transactionList, transaction)
+	}
+
+	return transactionList, nil
+}
+
+func (tr *TransactionRepository) Update(transcationID string, transactionDomain transactions.Domain) error {
+	_, err := tr.transactionsCollection().Doc(transcationID).Set(tr.ctx, transactionDomain)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
