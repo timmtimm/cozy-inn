@@ -25,6 +25,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	// single role
 	userMiddleware := _middleware.RoleMiddleware{Role: []string{"user"}}
 	adminMiddleware := _middleware.RoleMiddleware{Role: []string{"admin"}}
+	receptionistMiddleware := _middleware.RoleMiddleware{Role: []string{"receptionist"}}
 
 	// multiple role
 	allMiddleware := _middleware.RoleMiddleware{Role: []string{"user", "receptionist", "admin"}}
@@ -53,6 +54,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	transaction.POST("/", cl.TransactionController.CreateTransaction, userMiddleware.CheckToken)
 	transaction.GET("/:transaction-id", cl.TransactionController.GetTransaction, userMiddleware.CheckToken)
 	transaction.PUT("/:transaction-id", cl.TransactionController.UpdatePayment, userMiddleware.CheckToken)
+	transaction.PUT("/cancel/:transaction-id", cl.TransactionController.CancelTransaction, userMiddleware.CheckToken)
 	transaction.DELETE("/:transaction-id", cl.TransactionController.AdminDelete, adminMiddleware.CheckToken)
 	transaction.GET("/verification", cl.TransactionController.GetAllPaymentNotVerified, adminReceptionistMiddleware.CheckToken)
 	transaction.GET("/verification/:transaction-id", cl.TransactionController.GetTransactionOnVerification, adminReceptionistMiddleware.CheckToken)
@@ -65,7 +67,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	transaction.PUT("/check-out/:transaction-id", cl.TransactionController.UpdateCheckOut, adminReceptionistMiddleware.CheckToken)
 
 	receptionist := e.Group("/api/v1/receptionist")
-	receptionist.POST("/transaction", cl.TransactionController.ReceptionistCreateTransaction, adminReceptionistMiddleware.CheckToken)
+	receptionist.POST("/transaction", cl.TransactionController.ReceptionistCreateTransaction, receptionistMiddleware.CheckToken)
 
 	admin := e.Group("/api/v1/admin", adminMiddleware.CheckToken)
 	admin.GET("/user", cl.UserController.AdminGetUserList)

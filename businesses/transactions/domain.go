@@ -34,6 +34,7 @@ type UseCase interface {
 	CheckAvailabilityAllRoom(startDate time.Time, endDate time.Time) ([]string, error)
 	CreateTransaction(email string, transactionInput Domain) (Domain, error)
 	ReceptionistCreateTransaction(transactionInput Domain) (Domain, error)
+	CancelTransaction(transactionID string, email string) error
 	UpdatePayment(transactionID string, email string, payment_URL string) (Domain, error)
 	UpdateVerification(transactionID string, status string) (Domain, error)
 	UpdateCheckIn(transactionID string) (Domain, error)
