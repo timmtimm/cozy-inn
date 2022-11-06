@@ -46,6 +46,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	room.GET("/", cl.RoomController.GetAllRoom)
 	room.GET("/:room-type", cl.RoomController.GetRoom, adminReceptionistMiddleware.CheckToken)
 	room.PUT("/:room-type", cl.RoomController.UpdateRoom, adminReceptionistMiddleware.CheckToken)
+	room.POST("/check-availability", cl.TransactionController.CheckAvailabilityAllRoom)
 
 	transaction := e.Group("/api/v1/transaction")
 	transaction.GET("/", cl.TransactionController.GetAllTransaction, userMiddleware.CheckToken)
@@ -76,6 +77,6 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	admin.DELETE("/room/:room-type", cl.RoomController.DeleteRoom)
 	admin.GET("/transaction", cl.TransactionController.AdminGetAllTransaction)
 	admin.GET("/transaction/:transaction-id", cl.TransactionController.AdminGetTransaction)
-	// admin.PUT("/transaction/:transaction-id", cl.TransactionController.AdminUpdateTransaction)
+	admin.PUT("/transaction/:transaction-id", cl.TransactionController.AdminUpdateTransaction)
 	// admin.DELETE("/transaction/:transaction-id", cl.TransactionController.AdminDeleteTransaction)
 }

@@ -19,6 +19,33 @@ func NewTransactionController(transactionUC transactions.UseCase) *TransactionCo
 	}
 }
 
+func (transactionCtrl *TransactionController) CheckAvailabilityAllRoom(c echo.Context) error {
+	userInput := request.CheckAvailability{}
+	if err := c.Bind(&userInput); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	if userInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "validation failed",
+		})
+	}
+
+	availableRooms, err := transactionCtrl.transactionUseCase.CheckAvailabilityAllRoom(userInput.StartDate, userInput.EndDate)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success get all available rooms",
+		"data":    availableRooms,
+	})
+}
+
 func (transactionCtrl *TransactionController) GetAllTransaction(c echo.Context) error {
 	email, err := middleware.GetEmailByToken(c)
 	if err != nil {
@@ -331,6 +358,35 @@ func (transactionCtrl *TransactionController) AdminGetTransaction(c echo.Context
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "success get transaction",
+		"data":    transaction,
+	})
+}
+
+func (transactionCtrl *TransactionController) AdminUpdateTransaction(c echo.Context) error {
+	transactionID := c.Param("transaction-id")
+
+	userInput := request.Update{}
+	if err := c.Bind(&userInput); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	if userInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "validation failed",
+		})
+	}
+
+	transaction, err := transactionCtrl.transactionUseCase.AdminUpdateTransaction(transactionID, userInput.ToDomain())
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success update transaction",
 		"data":    transaction,
 	})
 }
