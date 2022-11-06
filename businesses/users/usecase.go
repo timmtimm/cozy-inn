@@ -49,14 +49,15 @@ func (uu *UserUseCase) UserRegister(userInput Domain) (string, error) {
 
 func (uu *UserUseCase) AdminRegister(userInput Domain) error {
 	avaliableRoles := []string{"user", "receptionist"}
-	found := false
+	roleFound := false
 	for _, avaliableRole := range avaliableRoles {
 		if userInput.Role == avaliableRole {
-			found = true
+			roleFound = true
+			break
 		}
 	}
 
-	if !found {
+	if !roleFound {
 		return errors.New("invalid role")
 	}
 
@@ -102,14 +103,15 @@ func (uu *UserUseCase) UserUpdate(email string, userInput Domain) (Domain, error
 
 func (uu *UserUseCase) AdminUpdate(email string, userInput Domain) (Domain, error) {
 	avaliableRoles := []string{"user", "receptionist"}
-	found := false
+	roleFound := false
 	for _, avaliableRole := range avaliableRoles {
 		if userInput.Role == avaliableRole {
-			found = true
+			roleFound = true
+			break
 		}
 	}
 
-	if !found {
+	if !roleFound {
 		return Domain{}, errors.New("invalid role")
 	}
 
