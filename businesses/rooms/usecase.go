@@ -38,16 +38,17 @@ func (ru *RoomUseCase) GetRoom(roomType string) (Domain, error) {
 
 func (ru *RoomUseCase) CreateRoom(roomInput Domain) error {
 	availableStatus := []string{"available", "unavailable"}
-	found := false
+	statusFound := false
 	for _, avaliableRole := range availableStatus {
 		for _, room := range roomInput.Room {
 			if room.Status == avaliableRole {
-				found = true
+				statusFound = true
+				break
 			}
 		}
 	}
 
-	if !found {
+	if !statusFound {
 		return errors.New("invalid status")
 	}
 
@@ -61,16 +62,17 @@ func (ru *RoomUseCase) CreateRoom(roomInput Domain) error {
 
 func (ru RoomUseCase) UpdateRoom(roomInput Domain) (Domain, error) {
 	availableStatus := []string{"available", "unavailable"}
-	found := false
+	statusFound := false
 	for _, avaliableRole := range availableStatus {
 		for _, room := range roomInput.Room {
 			if room.Status == avaliableRole {
-				found = true
+				statusFound = true
+				break
 			}
 		}
 	}
 
-	if !found {
+	if !statusFound {
 		return Domain{}, errors.New("invalid status")
 	}
 

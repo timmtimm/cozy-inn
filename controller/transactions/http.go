@@ -405,3 +405,30 @@ func (transactionCtrl *TransactionController) AdminDeleteTransaction(c echo.Cont
 		"message": "success delete transaction",
 	})
 }
+
+func (transactionCtrl *TransactionController) ReceptionistCreateTransaction(c echo.Context) error {
+	userInput := request.Transaction{}
+	if err := c.Bind(&userInput); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	if userInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "validation failed",
+		})
+	}
+
+	transaction, err := transactionCtrl.transactionUseCase.ReceptionistCreateTransaction(userInput.ToDomain())
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success create transaction",
+		"data":    transaction,
+	})
+}

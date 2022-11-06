@@ -64,6 +64,9 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	transaction.GET("/check-out/:transaction-id", cl.TransactionController.GetCheckOut, adminReceptionistMiddleware.CheckToken)
 	transaction.PUT("/check-out/:transaction-id", cl.TransactionController.UpdateCheckOut, adminReceptionistMiddleware.CheckToken)
 
+	receptionist := e.Group("/api/v1/receptionist")
+	receptionist.POST("/transaction", cl.TransactionController.ReceptionistCreateTransaction, adminReceptionistMiddleware.CheckToken)
+
 	admin := e.Group("/api/v1/admin", adminMiddleware.CheckToken)
 	admin.GET("/user", cl.UserController.AdminGetUserList)
 	admin.POST("/user", cl.UserController.AdminRegister)
