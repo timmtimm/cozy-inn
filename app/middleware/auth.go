@@ -40,7 +40,6 @@ func (jwtConf *ConfigJWT) GenerateToken(email string, role string) string {
 	}
 
 	token, _ := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(jwtConf.SecretJWT))
-
 	return token
 }
 
@@ -61,7 +60,6 @@ func (rm RoleMiddleware) CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 				return []byte(util.GetConfig("JWT_SECRET_KEY")), nil
 			},
 		)
-
 		if err != nil {
 			return c.JSON(http.StatusUnauthorized, map[string]string{
 				"message": "invalid token",

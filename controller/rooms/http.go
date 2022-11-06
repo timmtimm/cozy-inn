@@ -32,29 +32,19 @@ func (roomCtrl *RoomController) GetAllRoom(c echo.Context) error {
 	})
 }
 
-func (roomCtrl *RoomController) CreateRoom(c echo.Context) error {
-	RoomInput := request.Room{}
-	if err := c.Bind(&RoomInput); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "invalid request",
-		})
-	}
+func (roomCtrl *RoomController) GetRoom(c echo.Context) error {
+	roomType := c.Param("room-type")
 
-	if err := RoomInput.Validate(); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "validation failed",
-		})
-	}
-
-	err := roomCtrl.roomUseCase.CreateRoom(RoomInput.ToDomain())
+	roomData, err := roomCtrl.roomUseCase.GetRoom(roomType)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"message": "invalid request",
+			"message": err.Error(),
 		})
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": "success create room",
+		"message": "success get room",
+		"data":    roomData,
 	})
 }
 
@@ -85,8 +75,35 @@ func (roomCtrl *RoomController) UpdateRoom(c echo.Context) error {
 	})
 }
 
+func (roomCtrl *RoomController) CreateRoom(c echo.Context) error {
+	RoomInput := request.Room{}
+	if err := c.Bind(&RoomInput); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	if err := RoomInput.Validate(); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "validation failed",
+		})
+	}
+
+	err := roomCtrl.roomUseCase.CreateRoom(RoomInput.ToDomain())
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": "invalid request",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success create room",
+	})
+}
+
 func (roomCtrl *RoomController) DeleteRoom(c echo.Context) error {
 	roomType := c.Param("room-type")
+
 	err := roomCtrl.roomUseCase.DeleteRoom(roomType)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{

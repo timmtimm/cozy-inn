@@ -19,6 +19,33 @@ func NewTransactionController(transactionUC transactions.UseCase) *TransactionCo
 	}
 }
 
+func (transactionCtrl *TransactionController) CheckAvailabilityAllRoom(c echo.Context) error {
+	userInput := request.CheckAvailability{}
+	if err := c.Bind(&userInput); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	if userInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "validation failed",
+		})
+	}
+
+	availableRooms, err := transactionCtrl.transactionUseCase.CheckAvailabilityAllRoom(userInput.StartDate, userInput.EndDate)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success get all available rooms",
+		"data":    availableRooms,
+	})
+}
+
 func (transactionCtrl *TransactionController) GetAllTransaction(c echo.Context) error {
 	email, err := middleware.GetEmailByToken(c)
 	if err != nil {
@@ -291,6 +318,80 @@ func (transactionCtrl *TransactionController) UpdateCheckOut(c echo.Context) err
 }
 
 func (transactionCtrl *TransactionController) AdminDelete(c echo.Context) error {
+	transactionID := c.Param("transaction-id")
+
+	err := transactionCtrl.transactionUseCase.AdminDeleteTransaction(transactionID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success delete transaction",
+	})
+}
+
+func (transactionCtrl *TransactionController) AdminGetAllTransaction(c echo.Context) error {
+	transactions, err := transactionCtrl.transactionUseCase.AdminGetAllTransaction()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success get all transaction",
+		"data":    transactions,
+	})
+}
+
+func (transactionCtrl *TransactionController) AdminGetTransaction(c echo.Context) error {
+	transactionID := c.Param("transaction-id")
+
+	transaction, err := transactionCtrl.transactionUseCase.GetTransaction(transactionID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success get transaction",
+		"data":    transaction,
+	})
+}
+
+func (transactionCtrl *TransactionController) AdminUpdateTransaction(c echo.Context) error {
+	transactionID := c.Param("transaction-id")
+
+	userInput := request.Update{}
+	if err := c.Bind(&userInput); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "invalid request",
+		})
+	}
+
+	if userInput.Validate() != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": "validation failed",
+		})
+	}
+
+	transaction, err := transactionCtrl.transactionUseCase.AdminUpdateTransaction(transactionID, userInput.ToDomain())
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success update transaction",
+		"data":    transaction,
+	})
+}
+
+func (transactionCtrl *TransactionController) AdminDeleteTransaction(c echo.Context) error {
 	transactionID := c.Param("transaction-id")
 
 	err := transactionCtrl.transactionUseCase.AdminDeleteTransaction(transactionID)
