@@ -166,6 +166,43 @@ func (transactionCtrl *TransactionController) UpdatePayment(c echo.Context) erro
 	})
 }
 
+func (transactionCtrl *TransactionController) CancelTransaction(c echo.Context) error {
+	transactionID := c.Param("transaction-id")
+
+	email, err := middleware.GetEmailByToken(c)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	err = transactionCtrl.transactionUseCase.CancelTransaction(transactionID, email)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success cancel transaction",
+	})
+}
+
+func (transactionCtrl *TransactionController) AdminDelete(c echo.Context) error {
+	transactionID := c.Param("transaction-id")
+
+	err := transactionCtrl.transactionUseCase.AdminDeleteTransaction(transactionID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success delete transaction",
+	})
+}
+
 func (transactionCtrl *TransactionController) GetAllPaymentNotVerified(c echo.Context) error {
 	transactions, err := transactionCtrl.transactionUseCase.GetAllPaymentNotVerified()
 	if err != nil {
@@ -314,21 +351,6 @@ func (transactionCtrl *TransactionController) UpdateCheckOut(c echo.Context) err
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "success update check out",
 		"data":    transaction,
-	})
-}
-
-func (transactionCtrl *TransactionController) AdminDelete(c echo.Context) error {
-	transactionID := c.Param("transaction-id")
-
-	err := transactionCtrl.transactionUseCase.AdminDeleteTransaction(transactionID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"message": err.Error(),
-		})
-	}
-
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": "success delete transaction",
 	})
 }
 

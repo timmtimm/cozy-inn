@@ -300,6 +300,31 @@ func (tu *TransactionUseCase) ReceptionistCreateTransaction(transactionInput Dom
 	return transaction, nil
 }
 
+func (tu *TransactionUseCase) CancelTransaction(transactionID string, email string) error {
+	transaction, err := tu.transactionRepository.GetTransactionByID(transactionID)
+	if err != nil {
+		return err
+	}
+
+	if transaction.Status == "verified" || transaction.Status == "checked-in" ||
+		transaction.Status == "checked-out" || transaction.Status == "canceled" {
+		return fmt.Errorf("transaction is %s", transaction.Status)
+	}
+
+	if transaction.UserEmail != email {
+		return errors.New("transaction not found")
+	}
+
+	transaction.Status = "canceled"
+
+	err = tu.transactionRepository.Update(transactionID, transaction)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (tu *TransactionUseCase) UpdatePayment(transactionID string, email string, payment_URL string) (Domain, error) {
 	transaction, err := tu.transactionRepository.GetTransactionByID(transactionID)
 	if err != nil {
@@ -404,6 +429,19 @@ func (tu *TransactionUseCase) UpdateCheckOut(transactionID string) (Domain, erro
 }
 
 func (tu *TransactionUseCase) AdminUpdateTransaction(transactionID string, userInput Domain) (Domain, error) {
+	avaliableStatus := []string{"unpaid", "verification-pending", "canceled", "verified", "checked-in", "checked-out", "done"}
+	statusFound := false
+	for _, status := range avaliableStatus {
+		if status == userInput.Status {
+			statusFound = true
+			break
+		}
+	}
+
+	if !statusFound {
+		return Domain{}, errors.New("invalid status")
+	}
+
 	transaction, err := tu.transactionRepository.GetTransactionByID(transactionID)
 	if err != nil {
 		return Domain{}, err
