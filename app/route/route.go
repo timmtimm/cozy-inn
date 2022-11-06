@@ -78,5 +78,5 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	admin.GET("/transaction", cl.TransactionController.AdminGetAllTransaction)
 	admin.GET("/transaction/:transaction-id", cl.TransactionController.AdminGetTransaction)
 	admin.PUT("/transaction/:transaction-id", cl.TransactionController.AdminUpdateTransaction)
-	// admin.DELETE("/transaction/:transaction-id", cl.TransactionController.AdminDeleteTransaction)
+	admin.DELETE("/transaction/:transaction-id", cl.TransactionController.AdminDeleteTransaction)
 }

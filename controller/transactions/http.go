@@ -390,3 +390,18 @@ func (transactionCtrl *TransactionController) AdminUpdateTransaction(c echo.Cont
 		"data":    transaction,
 	})
 }
+
+func (transactionCtrl *TransactionController) AdminDeleteTransaction(c echo.Context) error {
+	transactionID := c.Param("transaction-id")
+
+	err := transactionCtrl.transactionUseCase.AdminDeleteTransaction(transactionID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success delete transaction",
+	})
+}
