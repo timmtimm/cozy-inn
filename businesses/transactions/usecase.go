@@ -386,6 +386,7 @@ func (tu *TransactionUseCase) AdminUpdateTransaction(transactionID string, userI
 	transaction.CheckIn = userInput.CheckIn
 	transaction.CheckOut = userInput.CheckOut
 	transaction.Status = userInput.Status
+	transaction.Bill = roomType.Price * int(userInput.EndDate.Sub(userInput.StartDate).Hours()/24)
 	transaction.UpdatedAt = time.Now()
 
 	err = tu.transactionRepository.Update(transactionID, transaction)
