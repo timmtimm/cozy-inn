@@ -73,3 +73,48 @@ func (req *Verification) Validate() error {
 	err := validate.Struct(req)
 	return err
 }
+
+type Update struct {
+	RoomType   string    `json:"roomType" validate:"required" firestore:"roomType"`
+	RoomNumber int       `json:"roomNumber" validate:"required" firestore:"roomNumber"`
+	StartDate  time.Time `json:"startDate" validate:"required" firestore:"startDate"`
+	EndDate    time.Time `json:"EndDate" validate:"required" firestore:"EndDate"`
+	CheckIn    time.Time `json:"checkIn" firestore:"checkIn,omitempty"`
+	CheckOut   time.Time `json:"checkOut" firestore:"checkOut,omitempty"`
+	Status     string    `json:"status" firestore:"status"`
+}
+
+func (req *Update) ToDomain() transactions.Domain {
+	return transactions.Domain{
+		RoomType:   req.RoomType,
+		RoomNumber: req.RoomNumber,
+		StartDate:  req.StartDate,
+		EndDate:    req.EndDate,
+		CheckIn:    req.CheckIn,
+		Status:     req.Status,
+	}
+}
+
+func (req *Update) Validate() error {
+	validate := validator.New()
+	err := validate.Struct(req)
+	return err
+}
+
+type CheckAvailability struct {
+	StartDate time.Time `json:"startDate" validate:"required" firestore:"startDate"`
+	EndDate   time.Time `json:"endDate" validate:"required" firestore:"endDate"`
+}
+
+func (req *CheckAvailability) ToDomain() transactions.Domain {
+	return transactions.Domain{
+		StartDate: req.StartDate,
+		EndDate:   req.EndDate,
+	}
+}
+
+func (req *CheckAvailability) Validate() error {
+	validate := validator.New()
+	err := validate.Struct(req)
+	return err
+}

@@ -19,10 +19,39 @@ func NewRoomUsecase(rr Repository) UseCase {
 }
 
 func (ru *RoomUseCase) GetAllRoom() ([]Domain, error) {
-	return ru.roomRepository.GetAllRoom()
+	rooms, err := ru.roomRepository.GetAllRoom()
+	if err != nil {
+		return []Domain{}, err
+	}
+
+	return rooms, nil
+}
+
+func (ru *RoomUseCase) GetRoom(roomType string) (Domain, error) {
+	room, err := ru.roomRepository.GetRoomByType(roomType)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	return room, nil
 }
 
 func (ru *RoomUseCase) CreateRoom(roomInput Domain) error {
+	availableStatus := []string{"available", "unavailable"}
+	statusFound := false
+	for _, avaliableRole := range availableStatus {
+		for _, room := range roomInput.Room {
+			if room.Status == avaliableRole {
+				statusFound = true
+				break
+			}
+		}
+	}
+
+	if !statusFound {
+		return errors.New("invalid status")
+	}
+
 	err := ru.roomRepository.Create(roomInput)
 	if err != nil {
 		return err
@@ -32,6 +61,21 @@ func (ru *RoomUseCase) CreateRoom(roomInput Domain) error {
 }
 
 func (ru RoomUseCase) UpdateRoom(roomInput Domain) (Domain, error) {
+	availableStatus := []string{"available", "unavailable"}
+	statusFound := false
+	for _, avaliableRole := range availableStatus {
+		for _, room := range roomInput.Room {
+			if room.Status == avaliableRole {
+				statusFound = true
+				break
+			}
+		}
+	}
+
+	if !statusFound {
+		return Domain{}, errors.New("invalid status")
+	}
+
 	room, err := ru.roomRepository.GetRoomByType(roomInput.RoomType)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {

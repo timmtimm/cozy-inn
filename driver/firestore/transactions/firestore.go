@@ -28,6 +28,31 @@ func (tr *TransactionRepository) transactionsCollection() *firestore.CollectionR
 	return tr.client.Collection("transactions")
 }
 
+func (tr *TransactionRepository) GetAllTransaction() ([]transactions.Domain, error) {
+	transactionList := []transactions.Domain{}
+	transactionDoc := tr.transactionsCollection()
+
+	iter := transactionDoc.Documents(tr.ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transaction := transactions.Domain{}
+		if err := doc.DataTo(&transaction); err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transactionList = append(transactionList, transaction)
+	}
+
+	return transactionList, nil
+}
+
 func (tr *TransactionRepository) GetAllTransactionByEmail(email string) ([]transactions.Domain, error) {
 	transactionList := []transactions.Domain{}
 	transactionDoc := tr.transactionsCollection().Where("userEmail", "==", email)
@@ -43,7 +68,10 @@ func (tr *TransactionRepository) GetAllTransactionByEmail(email string) ([]trans
 		}
 
 		transaction := transactions.Domain{}
-		doc.DataTo(&transaction)
+		if err := doc.DataTo(&transaction); err != nil {
+			return []transactions.Domain{}, err
+		}
+
 		transactionList = append(transactionList, transaction)
 	}
 
@@ -127,7 +155,8 @@ func (tr *TransactionRepository) GetAllPaymentNotVerified() ([]transactions.Doma
 
 func (tr *TransactionRepository) GetTransactionByRoomAndEndDate(roomType string, startDate time.Time, roomNumber int) ([]transactions.Domain, error) {
 	transactionList := []transactions.Domain{}
-	transactionDoc := tr.transactionsCollection().Where("roomType", "==", roomType).Where("roomNumber", "==", roomNumber).Where("endDate", ">=", startDate).Where("status", "in", []string{"paid", "unpaid"})
+	transactionDoc := tr.transactionsCollection().Where("roomType", "==", roomType).Where("roomNumber", "==", roomNumber).Where(
+		"endDate", ">=", startDate).Where("status", "in", []string{"unpaid", "verification-pending", "checked-in", "verified"})
 
 	iter := transactionDoc.Documents(tr.ctx)
 	for {
@@ -162,6 +191,31 @@ func (tr *TransactionRepository) GetTransactionByID(transactionID string) (trans
 	}
 
 	return transaction, nil
+}
+
+func (tr *TransactionRepository) GetTransactionOngoing() ([]transactions.Domain, error) {
+	transactionList := []transactions.Domain{}
+	transactionDoc := tr.transactionsCollection().Where("status", "not-in", []string{"done, rejected, cancelled"})
+
+	iter := transactionDoc.Documents(tr.ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transaction := transactions.Domain{}
+		if err := doc.DataTo(&transaction); err != nil {
+			return []transactions.Domain{}, err
+		}
+
+		transactionList = append(transactionList, transaction)
+	}
+
+	return transactionList, nil
 }
 
 func (tr *TransactionRepository) Create(email string, transactionInput transactions.Domain, RoomData rooms.Domain) (transactions.Domain, error) {

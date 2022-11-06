@@ -24,6 +24,7 @@ type Room struct {
 
 type UseCase interface {
 	GetAllRoom() ([]Domain, error)
+	GetRoom(roomType string) (Domain, error)
 	CreateRoom(roomDomain Domain) error
 	UpdateRoom(roomDomain Domain) (Domain, error)
 	DeleteRoom(roomType string) error
