@@ -30,7 +30,7 @@ func (uu *UserUseCase) GetUserByEmail(email string) (Domain, error) {
 func (uu *UserUseCase) GetUserList() ([]Domain, error) {
 	users, err := uu.userRepository.GetUserList()
 	if err != nil {
-		return nil, err
+		return []Domain{}, err
 	}
 
 	return users, nil
@@ -115,10 +115,6 @@ func (uu *UserUseCase) AdminUpdate(email string, userInput Domain) (Domain, erro
 		return Domain{}, errors.New("invalid role")
 	}
 
-	if userInput.Role == "admin" {
-		return Domain{}, errors.New("can't change role to admin")
-	}
-
 	user, err := uu.userRepository.GetUserByEmail(email)
 	if err != nil {
 		return Domain{}, err
@@ -137,7 +133,12 @@ func (uu *UserUseCase) AdminUpdate(email string, userInput Domain) (Domain, erro
 }
 
 func (uu *UserUseCase) AdminDelete(email string) error {
-	err := uu.userRepository.Delete(email)
+	_, err := uu.userRepository.GetUserByEmail(email)
+	if err != nil {
+		return err
+	}
+
+	err = uu.userRepository.Delete(email)
 	if err != nil {
 		return err
 	}

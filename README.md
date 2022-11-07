@@ -34,3 +34,10 @@ go install github.com/cosmtrek/air@latest
 ```sh
 air
 ```
+
+
+1. go install github.com/vektra/mockery/v2@latest
+2. cd to folder
+3. mockery --all --keeptree
+
+go test . -v -coverprofile=cover; go tool cover -html=cover
