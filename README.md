@@ -35,9 +35,14 @@ go install github.com/cosmtrek/air@latest
 air
 ```
 
+## Unit Testing
 
-1. go install github.com/vektra/mockery/v2@latest
-2. cd to folder
-3. mockery --all --keeptree
+To run unit testing, point to the directory of the package you want to test and run the following command
+```sh
+go test . -v -coverprofile=cover
+```
 
-go test . -v -coverprofile=cover; go tool cover -html=cover
+To view the coverage report with html, run the following command
+```sh
+go tool cover -html=cover
+```
