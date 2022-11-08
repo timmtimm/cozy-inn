@@ -3,9 +3,6 @@ package rooms
 import (
 	"errors"
 	"time"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type RoomUseCase struct {
@@ -60,7 +57,7 @@ func (ru *RoomUseCase) CreateRoom(roomInput Domain) error {
 	return nil
 }
 
-func (ru RoomUseCase) UpdateRoom(roomInput Domain) (Domain, error) {
+func (ru *RoomUseCase) UpdateRoom(roomInput Domain) (Domain, error) {
 	availableStatus := []string{"available", "unavailable"}
 	statusFound := false
 	for _, avaliableRole := range availableStatus {
@@ -78,9 +75,7 @@ func (ru RoomUseCase) UpdateRoom(roomInput Domain) (Domain, error) {
 
 	room, err := ru.roomRepository.GetRoomByType(roomInput.RoomType)
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			return Domain{}, errors.New("room type not registered")
-		}
+		return Domain{}, errors.New("room type not registered")
 	}
 
 	room.Room = roomInput.Room
