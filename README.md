@@ -34,3 +34,15 @@ go install github.com/cosmtrek/air@latest
 ```sh
 air
 ```
+
+## Unit Testing
+
+To run unit testing, point to the directory of the package you want to test and run the following command
+```sh
+go test . -v -coverprofile=cover
+```
+
+To view the coverage report with html, run the following command
+```sh
+go tool cover -html=cover
+```

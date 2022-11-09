@@ -97,7 +97,7 @@ func (tu *TransactionUseCase) GetCheckOutTransaction(transactionID string) (Doma
 	}
 
 	if transaction.Status != "checked-in" {
-		return Domain{}, fmt.Errorf("transaction is on %s", transaction.Status)
+		return Domain{}, fmt.Errorf("transaction is %s", transaction.Status)
 	}
 
 	return transaction, nil
@@ -117,9 +117,7 @@ func (tu *TransactionUseCase) CheckAvailabilityAllRoom(startDate time.Time, endD
 	startDate = time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 0, 0, 0, 0, time.UTC)
 	endDate = time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 0, 0, 0, 0, time.UTC)
 
-	if startDate.Before(checkDate) || endDate.Before(checkDate) {
-		return []string{}, errors.New("invalid date")
-	} else if startDate.After(endDate) {
+	if startDate.Before(checkDate) || endDate.Before(checkDate) || startDate.After(endDate) {
 		return []string{}, errors.New("invalid date")
 	}
 
@@ -128,7 +126,7 @@ func (tu *TransactionUseCase) CheckAvailabilityAllRoom(startDate time.Time, endD
 		return []string{}, err
 	}
 
-	var availableRooms []string
+	availableRooms := []string{}
 	for _, roomType := range roomTypes {
 		for _, room := range roomType.Room {
 			if room.Status == "available" {
@@ -145,13 +143,9 @@ func (tu *TransactionUseCase) CheckAvailabilityAllRoom(startDate time.Time, endD
 				} else {
 					available := true
 					for _, transaction := range transactions {
-						// start date between input end date and input start date
-						if transaction.StartDate.Before(endDate) && transaction.StartDate.After(startDate) {
-							available = false
-						}
-
-						// end date between input end date and input start date
-						if transaction.EndDate.Before(endDate) && transaction.EndDate.After(startDate) {
+						if (transaction.StartDate == startDate && transaction.EndDate == endDate) ||
+							(transaction.StartDate.Before(endDate) && transaction.StartDate.After(startDate)) ||
+							(transaction.EndDate.Before(endDate) && transaction.EndDate.After(startDate)) {
 							available = false
 						}
 					}
@@ -172,9 +166,7 @@ func (tu *TransactionUseCase) CreateTransaction(email string, transactionInput D
 	transactionInput.StartDate = time.Date(transactionInput.StartDate.Year(), transactionInput.StartDate.Month(), transactionInput.StartDate.Day(), 0, 0, 0, 0, time.UTC)
 	transactionInput.EndDate = time.Date(transactionInput.EndDate.Year(), transactionInput.EndDate.Month(), transactionInput.EndDate.Day(), 0, 0, 0, 0, time.UTC)
 
-	if transactionInput.StartDate.Before(checkDate) || transactionInput.EndDate.Before(checkDate) {
-		return Domain{}, errors.New("invalid date")
-	} else if transactionInput.StartDate.After(transactionInput.EndDate) {
+	if transactionInput.StartDate.Before(checkDate) || transactionInput.EndDate.Before(checkDate) || transactionInput.StartDate.After(transactionInput.EndDate) {
 		return Domain{}, errors.New("invalid date")
 	}
 
@@ -198,13 +190,9 @@ func (tu *TransactionUseCase) CreateTransaction(email string, transactionInput D
 	}
 
 	for _, transaction := range transactionList {
-		// start date between input end date and input start date
-		if transaction.StartDate.Before(transactionInput.EndDate) && transaction.StartDate.After(transactionInput.StartDate) {
-			return Domain{}, errors.New("room is not available")
-		}
-
-		// end date between input end date and input start date
-		if transaction.EndDate.Before(transactionInput.EndDate) && transaction.EndDate.After(transactionInput.StartDate) {
+		if (transaction.StartDate == transactionInput.StartDate && transaction.EndDate == transactionInput.EndDate) ||
+			(transaction.StartDate.Before(transactionInput.EndDate) && transaction.StartDate.After(transactionInput.StartDate)) ||
+			(transaction.EndDate.Before(transactionInput.EndDate) && transaction.EndDate.After(transactionInput.StartDate)) {
 			return Domain{}, errors.New("room is not available")
 		}
 	}
@@ -218,7 +206,7 @@ func (tu *TransactionUseCase) CreateTransaction(email string, transactionInput D
 	timeToString, _ := transactionInput.CreatedAt.UTC().MarshalText()
 	transactionInput.TransactionID = fmt.Sprintf("%s_%s", timeToString, email)
 
-	transaction, err := tu.transactionRepository.Create(email, transactionInput, RoomData)
+	transaction, err := tu.transactionRepository.Create(email, transactionInput)
 	if err != nil {
 		return Domain{}, err
 	}
@@ -231,9 +219,7 @@ func (tu *TransactionUseCase) ReceptionistCreateTransaction(transactionInput Dom
 	transactionInput.StartDate = time.Date(transactionInput.StartDate.Year(), transactionInput.StartDate.Month(), transactionInput.StartDate.Day(), 0, 0, 0, 0, time.UTC)
 	transactionInput.EndDate = time.Date(transactionInput.EndDate.Year(), transactionInput.EndDate.Month(), transactionInput.EndDate.Day(), 0, 0, 0, 0, time.UTC)
 
-	if transactionInput.StartDate.Before(checkDate) || transactionInput.EndDate.Before(checkDate) {
-		return Domain{}, errors.New("invalid date")
-	} else if transactionInput.StartDate.After(transactionInput.EndDate) {
+	if transactionInput.StartDate.Before(checkDate) || transactionInput.EndDate.Before(checkDate) || transactionInput.StartDate.After(transactionInput.EndDate) {
 		return Domain{}, errors.New("invalid date")
 	}
 
@@ -257,6 +243,7 @@ func (tu *TransactionUseCase) ReceptionistCreateTransaction(transactionInput Dom
 
 	for _, room := range RoomData.Room {
 		if room.Number == transactionInput.RoomNumber && room.Status != "available" {
+			fmt.Println("room number", room.Number, "room status", room.Status)
 			return Domain{}, errors.New("room is not available")
 		}
 	}
@@ -270,17 +257,9 @@ func (tu *TransactionUseCase) ReceptionistCreateTransaction(transactionInput Dom
 	}
 
 	for _, transaction := range transactionList {
-		if transaction.StartDate == transactionInput.StartDate && transaction.EndDate == transactionInput.EndDate {
-			return Domain{}, errors.New("room is not available")
-		}
-
-		// start date between input end date and input start date
-		if transaction.StartDate.Before(transactionInput.EndDate) && transaction.StartDate.After(transactionInput.StartDate) {
-			return Domain{}, errors.New("room is not available")
-		}
-
-		// end date between input end date and input start date
-		if transaction.EndDate.Before(transactionInput.EndDate) && transaction.EndDate.After(transactionInput.StartDate) {
+		if (transaction.StartDate == transactionInput.StartDate && transaction.EndDate == transactionInput.EndDate) ||
+			(transaction.StartDate.Before(transactionInput.EndDate) && transaction.StartDate.After(transactionInput.StartDate)) ||
+			(transaction.EndDate.Before(transactionInput.EndDate) && transaction.EndDate.After(transactionInput.StartDate)) {
 			return Domain{}, errors.New("room is not available")
 		}
 	}
@@ -292,7 +271,7 @@ func (tu *TransactionUseCase) ReceptionistCreateTransaction(transactionInput Dom
 	timeToString, _ := transactionInput.CreatedAt.UTC().MarshalText()
 	transactionInput.TransactionID = fmt.Sprintf("%s_%s", timeToString, transactionInput.UserEmail)
 
-	transaction, err := tu.transactionRepository.Create(transactionInput.UserEmail, transactionInput, RoomData)
+	transaction, err := tu.transactionRepository.Create(transactionInput.UserEmail, transactionInput)
 	if err != nil {
 		return Domain{}, err
 	}
@@ -413,7 +392,7 @@ func (tu *TransactionUseCase) UpdateCheckOut(transactionID string) (Domain, erro
 	}
 
 	if transaction.Status != "checked-in" {
-		return Domain{}, fmt.Errorf("transaction is on %s", transaction.Status)
+		return Domain{}, fmt.Errorf("transaction is %s", transaction.Status)
 	}
 
 	transaction.Status = "done"
@@ -475,25 +454,12 @@ func (tu *TransactionUseCase) AdminUpdateTransaction(transactionID string, userI
 		return Domain{}, err
 	}
 
-	available := true
 	for _, transaction := range transactions {
-		if transaction.StartDate == userInput.StartDate && transaction.EndDate == userInput.EndDate {
+		if (transaction.StartDate == userInput.StartDate && transaction.EndDate == userInput.EndDate) ||
+			(transaction.StartDate.Before(userInput.EndDate) && transaction.StartDate.After(userInput.StartDate)) ||
+			(transaction.EndDate.Before(userInput.EndDate) && transaction.EndDate.After(userInput.StartDate)) {
 			return Domain{}, errors.New("room is not available")
 		}
-
-		// start date between input end date and input start date
-		if transaction.StartDate.Before(userInput.EndDate) && transaction.StartDate.After(userInput.StartDate) {
-			available = false
-		}
-
-		// end date between input end date and input start date
-		if transaction.EndDate.Before(userInput.EndDate) && transaction.EndDate.After(userInput.StartDate) {
-			available = false
-		}
-	}
-
-	if !available {
-		return Domain{}, errors.New("room is not available")
 	}
 
 	transaction.RoomType = userInput.RoomType
