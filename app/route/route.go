@@ -37,19 +37,21 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 		})
 	})
 
-	user := e.Group("/api/v1/user")
+	apiV1 := e.Group("/api/v1")
+
+	user := apiV1.Group("/user")
 	user.POST("/register", cl.UserController.UserRegister)
 	user.POST("/login", cl.UserController.Login)
 	user.GET("/profile", cl.UserController.GetUserProfile, allMiddleware.CheckToken)
 	user.PUT("/profile", cl.UserController.UpdateUserProfile, allMiddleware.CheckToken)
 
-	room := e.Group("/api/v1/room")
+	room := apiV1.Group("/room")
 	room.GET("/", cl.RoomController.GetAllRoom)
 	room.GET("/:room-type", cl.RoomController.GetRoom, adminReceptionistMiddleware.CheckToken)
 	room.PUT("/:room-type", cl.RoomController.UpdateRoom, adminReceptionistMiddleware.CheckToken)
 	room.POST("/check-availability", cl.TransactionController.CheckAvailabilityAllRoom)
 
-	transaction := e.Group("/api/v1/transaction")
+	transaction := apiV1.Group("/transaction")
 	transaction.GET("/", cl.TransactionController.GetAllTransaction, userMiddleware.CheckToken)
 	transaction.POST("/", cl.TransactionController.CreateTransaction, userMiddleware.CheckToken)
 	transaction.GET("/:transaction-id", cl.TransactionController.GetTransaction, userMiddleware.CheckToken)
@@ -66,10 +68,10 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	transaction.GET("/check-out/:transaction-id", cl.TransactionController.GetCheckOut, adminReceptionistMiddleware.CheckToken)
 	transaction.PUT("/check-out/:transaction-id", cl.TransactionController.UpdateCheckOut, adminReceptionistMiddleware.CheckToken)
 
-	receptionist := e.Group("/api/v1/receptionist")
+	receptionist := e.Group("/receptionist")
 	receptionist.POST("/transaction", cl.TransactionController.ReceptionistCreateTransaction, receptionistMiddleware.CheckToken)
 
-	admin := e.Group("/api/v1/admin", adminMiddleware.CheckToken)
+	admin := e.Group("/admin", adminMiddleware.CheckToken)
 	admin.GET("/user", cl.UserController.AdminGetUserList)
 	admin.POST("/user", cl.UserController.AdminRegister)
 	admin.GET("/user/:user-email", cl.UserController.AdminGetUser)
