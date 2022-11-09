@@ -218,7 +218,7 @@ func (tr *TransactionRepository) GetTransactionOngoing() ([]transactions.Domain,
 	return transactionList, nil
 }
 
-func (tr *TransactionRepository) Create(email string, transactionInput transactions.Domain, RoomData rooms.Domain) (transactions.Domain, error) {
+func (tr *TransactionRepository) Create(email string, transactionInput transactions.Domain) (transactions.Domain, error) {
 	rec := FromDomain(transactionInput)
 
 	_, err := tr.transactionsCollection().Doc(rec.TransactionID).Set(tr.ctx, Model{

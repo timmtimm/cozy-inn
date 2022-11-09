@@ -1,7 +1,6 @@
 package transactions
 
 import (
-	"cozy-inn/businesses/rooms"
 	"time"
 )
 
@@ -52,7 +51,7 @@ type Repository interface {
 	GetTransactionByRoomAndEndDate(roomType string, startDate time.Time, roomNumber int) ([]Domain, error)
 	GetTransactionByID(transactionID string) (Domain, error)
 	GetTransactionOngoing() ([]Domain, error)
-	Create(email string, transactionInput Domain, RoomData rooms.Domain) (Domain, error)
+	Create(email string, transactionInput Domain) (Domain, error)
 	Update(transcationID string, transactionDomain Domain) error
 	Delete(transactionID string) error
 }
