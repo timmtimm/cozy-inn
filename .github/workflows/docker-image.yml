@@ -24,7 +24,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Stopping old docker container
-      run: sudo docker stop /cozy-innn || true
+      run: sudo docker stop /cozy-inn || true
     - name: Removing old docker container
       run: sudo docker rm /cozy-inn || true
     - name: Build docker images
