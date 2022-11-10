@@ -8,7 +8,7 @@ import (
 
 func GetFirebaseEnv(key string) string {
 	viper.AddConfigPath(".")
-	viper.SetConfigFile(".firebase\\service-account.json")
+	viper.SetConfigFile(".firebase/service-account.json")
 
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalf("error when reading config: %s", err)
@@ -19,7 +19,7 @@ func GetFirebaseEnv(key string) string {
 
 func GetConfig(key string) string {
 	viper.AddConfigPath(".")
-	viper.SetConfigFile("D:\\Nguly\\Git\\cozy-inn\\.env")
+	viper.SetConfigFile(".env")
 
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalf("error when reading config: %s", err)
