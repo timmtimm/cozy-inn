@@ -9,14 +9,20 @@ on:
 
 jobs:
 
+  testing:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Unit Testing Use Case
+        run: go clean -testcache;  go test ./businesses/... -v
+
   build:
 
     runs-on: self-hosted
 
     steps:
     - uses: actions/checkout@v3
-    - name: Unit Testing Use Case
-      run: go clean -testcache;  go test ./businesses/... -v
     - name: Stopping old docker container
       run: sudo docker stop /cozy-innn || true
     - name: Removing old docker container
