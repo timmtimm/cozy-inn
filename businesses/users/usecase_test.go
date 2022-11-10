@@ -4,7 +4,6 @@ import (
 	_middleware "cozy-inn/app/middleware"
 	"cozy-inn/businesses/users"
 	_userMock "cozy-inn/businesses/users/mocks"
-	"cozy-inn/util"
 	"errors"
 	"testing"
 	"time"
@@ -21,7 +20,7 @@ var (
 
 func TestMain(m *testing.M) {
 	configJWT := _middleware.ConfigJWT{
-		SecretJWT:       util.GetConfig("JWT_SECRET_KEY"),
+		SecretJWT:       "secret",
 		ExpiresDuration: 1,
 	}
 
