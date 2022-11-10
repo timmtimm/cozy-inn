@@ -31,13 +31,13 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	allMiddleware := _middleware.RoleMiddleware{Role: []string{"user", "receptionist", "admin"}}
 	adminReceptionistMiddleware := _middleware.RoleMiddleware{Role: []string{"receptionist", "admin"}}
 
-	e.GET("/api/v1/", func(c echo.Context) error {
+	apiV1 := e.Group("/api/v1")
+
+	apiV1.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
 			"message": "Hello World!",
 		})
 	})
-
-	apiV1 := e.Group("/api/v1")
 
 	user := apiV1.Group("/user")
 	user.POST("/register", cl.UserController.UserRegister)
@@ -68,10 +68,10 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	transaction.GET("/check-out/:transaction-id", cl.TransactionController.GetCheckOut, adminReceptionistMiddleware.CheckToken)
 	transaction.PUT("/check-out/:transaction-id", cl.TransactionController.UpdateCheckOut, adminReceptionistMiddleware.CheckToken)
 
-	receptionist := e.Group("/receptionist")
+	receptionist := apiV1.Group("/receptionist")
 	receptionist.POST("/transaction", cl.TransactionController.ReceptionistCreateTransaction, receptionistMiddleware.CheckToken)
 
-	admin := e.Group("/admin", adminMiddleware.CheckToken)
+	admin := apiV1.Group("/admin", adminMiddleware.CheckToken)
 	admin.GET("/user", cl.UserController.AdminGetUserList)
 	admin.POST("/user", cl.UserController.AdminRegister)
 	admin.GET("/user/:user-email", cl.UserController.AdminGetUser)
