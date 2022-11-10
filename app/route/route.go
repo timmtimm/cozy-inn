@@ -33,7 +33,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 
 	apiV1 := e.Group("/api/v1")
 
-	apiV1.GET("/", func(c echo.Context) error {
+	apiV1.GET("", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
 			"message": "Hello World!",
 		})
@@ -52,38 +52,50 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	room.POST("/check-availability", cl.TransactionController.CheckAvailabilityAllRoom)
 
 	transaction := apiV1.Group("/transaction")
-	transaction.GET("/", cl.TransactionController.GetAllTransaction, userMiddleware.CheckToken)
+	transaction.GET("", cl.TransactionController.GetAllTransaction, userMiddleware.CheckToken)
 	transaction.POST("/", cl.TransactionController.CreateTransaction, userMiddleware.CheckToken)
 	transaction.GET("/:transaction-id", cl.TransactionController.GetTransaction, userMiddleware.CheckToken)
 	transaction.PUT("/:transaction-id", cl.TransactionController.UpdatePayment, userMiddleware.CheckToken)
 	transaction.PUT("/cancel/:transaction-id", cl.TransactionController.CancelTransaction, userMiddleware.CheckToken)
 	transaction.DELETE("/:transaction-id", cl.TransactionController.AdminDelete, adminMiddleware.CheckToken)
-	transaction.GET("/verification", cl.TransactionController.GetAllPaymentNotVerified, adminReceptionistMiddleware.CheckToken)
-	transaction.GET("/verification/:transaction-id", cl.TransactionController.GetTransactionOnVerification, adminReceptionistMiddleware.CheckToken)
-	transaction.PUT("/verification/:transaction-id", cl.TransactionController.UpdateVerification, adminReceptionistMiddleware.CheckToken)
-	transaction.GET("/check-in", cl.TransactionController.GetAllReadyCheckIn, adminReceptionistMiddleware.CheckToken)
-	transaction.GET("/check-in/:transaction-id", cl.TransactionController.GetCheckIn, adminReceptionistMiddleware.CheckToken)
-	transaction.PUT("/check-in/:transaction-id", cl.TransactionController.UpdateCheckIn, adminReceptionistMiddleware.CheckToken)
-	transaction.GET("/check-out", cl.TransactionController.GetAllReadyCheckOut, adminReceptionistMiddleware.CheckToken)
-	transaction.GET("/check-out/:transaction-id", cl.TransactionController.GetCheckOut, adminReceptionistMiddleware.CheckToken)
-	transaction.PUT("/check-out/:transaction-id", cl.TransactionController.UpdateCheckOut, adminReceptionistMiddleware.CheckToken)
+
+	transactionVerification := transaction.Group("/verification")
+	transactionVerification.GET("", cl.TransactionController.GetAllPaymentNotVerified, adminReceptionistMiddleware.CheckToken)
+	transactionVerification.GET("/:transaction-id", cl.TransactionController.GetTransactionOnVerification, adminReceptionistMiddleware.CheckToken)
+	transactionVerification.PUT("/:transaction-id", cl.TransactionController.UpdateVerification, adminReceptionistMiddleware.CheckToken)
+
+	transactionCheckIn := transaction.Group("/check-in")
+	transactionCheckIn.GET("", cl.TransactionController.GetAllReadyCheckIn, adminReceptionistMiddleware.CheckToken)
+	transactionCheckIn.GET("/:transaction-id", cl.TransactionController.GetCheckIn, adminReceptionistMiddleware.CheckToken)
+	transactionCheckIn.PUT("/:transaction-id", cl.TransactionController.UpdateCheckIn, adminReceptionistMiddleware.CheckToken)
+
+	transactionCheckOut := transaction.Group("/check-out")
+	transactionCheckOut.GET("", cl.TransactionController.GetAllReadyCheckOut, adminReceptionistMiddleware.CheckToken)
+	transactionCheckOut.GET("/:transaction-id", cl.TransactionController.GetCheckOut, adminReceptionistMiddleware.CheckToken)
+	transactionCheckOut.PUT("/:transaction-id", cl.TransactionController.UpdateCheckOut, adminReceptionistMiddleware.CheckToken)
 
 	receptionist := apiV1.Group("/receptionist")
 	receptionist.POST("/transaction", cl.TransactionController.ReceptionistCreateTransaction, receptionistMiddleware.CheckToken)
 
 	admin := apiV1.Group("/admin", adminMiddleware.CheckToken)
-	admin.GET("/user", cl.UserController.AdminGetUserList)
-	admin.POST("/user", cl.UserController.AdminRegister)
-	admin.GET("/user/:user-email", cl.UserController.AdminGetUser)
-	admin.PUT("/user/:user-email", cl.UserController.AdminUpdate)
-	admin.DELETE("/user/:user-email", cl.UserController.AdminDelete)
-	admin.GET("/room", cl.RoomController.GetAllRoom)
-	admin.GET("/room/:room-type", cl.RoomController.GetRoom)
-	admin.PUT("/room/:room-type", cl.RoomController.UpdateRoom)
-	admin.POST("/room", cl.RoomController.CreateRoom)
-	admin.DELETE("/room/:room-type", cl.RoomController.DeleteRoom)
-	admin.GET("/transaction", cl.TransactionController.AdminGetAllTransaction)
-	admin.GET("/transaction/:transaction-id", cl.TransactionController.AdminGetTransaction)
-	admin.PUT("/transaction/:transaction-id", cl.TransactionController.AdminUpdateTransaction)
-	admin.DELETE("/transaction/:transaction-id", cl.TransactionController.AdminDeleteTransaction)
+
+	adminUser := admin.Group("/user")
+	adminUser.GET("", cl.UserController.AdminGetUserList)
+	adminUser.POST("/", cl.UserController.AdminRegister)
+	adminUser.GET("/:user-email", cl.UserController.AdminGetUser)
+	adminUser.PUT("/:user-email", cl.UserController.AdminUpdate)
+	adminUser.DELETE("/:user-email", cl.UserController.AdminDelete)
+
+	adminRoom := admin.Group("/room")
+	adminRoom.GET("", cl.RoomController.GetAllRoom)
+	adminRoom.GET("/:room-type", cl.RoomController.GetRoom)
+	adminRoom.PUT("/:room-type", cl.RoomController.UpdateRoom)
+	adminRoom.POST("", cl.RoomController.CreateRoom)
+	adminRoom.DELETE("/:room-type", cl.RoomController.DeleteRoom)
+
+	adminTransaction := admin.Group("/transaction")
+	adminTransaction.GET("", cl.TransactionController.AdminGetAllTransaction)
+	adminTransaction.GET("/:transaction-id", cl.TransactionController.AdminGetTransaction)
+	adminTransaction.PUT("/:transaction-id", cl.TransactionController.AdminUpdateTransaction)
+	adminTransaction.DELETE("/:transaction-id", cl.TransactionController.AdminDeleteTransaction)
 }
